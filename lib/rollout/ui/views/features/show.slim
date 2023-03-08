@@ -1,3 +1,17 @@
+javascript:
+    window.onload = () => {
+        const percentInput = document.getElementById('percentage');
+        const startingPercent = Number(percentInput.value);
+        const cacheBreakToggle = document.getElementById('consumer_cache_break');
+
+        cacheBreakToggle.onchange = ({ target }) => {
+            let maxPercent = target.checked ? Math.min(100, startingPercent + 20) : 100;
+            let minPercent = target.checked ? Math.max(startingPercent - 20, 0) : 0;
+            percentInput.max = maxPercent.toString();
+            percentInput.min = minPercent.toString();
+        };
+    };
+
 a.text-sm.text-blue-600(href=index_path class='hover:text-blue-700 hover:underline')
   ' &larr; back to overview
 
@@ -18,6 +32,44 @@ main.p-6.bg-gray-100.max-w-lg.w-full.text-sm.rounded-sm
         value=@feature.data['description']
         class='hover:border-gray-500'
       )
+    .mb-5.flex.items-center
+      input(
+        name='consumer_cache_break'
+        value="false"
+        hidden
+      )
+      input(
+        name='consumer_cache_break'
+        id='consumer_cache_break'
+        value="true"
+        type="checkbox"
+        checked=(@feature.data['consumer_cache_break'] == 'true')
+      )
+      label.m-1.font-bold(for='consumer_cache_break')Consumer Cache Break
+      div[class="tooltip cursor-pointer"]
+        | INFO?
+        div.tooltip-text.p-5.rounded.bg-white.shadow-xl#giant-popover
+          p
+            | Check this box if you <b>need</b> a consumer-side cache break on activation. A cache break may be unnecessary even
+            |  if the flag is used on the consumer side.
+          p.text-md.my-3
+            | Example scenarios to determine need
+          div
+            ol.list-decimal.pl-6
+              li.mb-3
+                | The flag is passed to the consumer side and you need the interface to update immediately on each restaurant's activation and you'll be activation slowly over time.
+                p
+                  | <span class="font-bold text-green-700">Actions:</span> <b>CHECK THE BOX</b>, Update the percentage/ids/groups to what you need.<br>
+                  | Percentage cannot change by more that 20%, restaurants will update immediately
+              li
+                p.mb-2
+                  | The flag is passed to the consumer side, you need to and are ready to activate to 100%
+                p.mb-2
+                  | <span class="font-bold text-blue-700">Option A:</span> The interface update can wait until the next release (usually tomorrow AM)<br>
+                  | <span class="font-bold text-green-700">Actions:</span> <b>UNCHECK THE BOX</b>, update to 100%, wait for tomorrow morning's release.
+                p
+                  | <span class="font-bold text-blue-700">Option B:</span> It needs to activate and update consumer interface ASAP.<br>
+                  | <span class="font-bold text-green-700">Actions:</span> <b>CHECK THE BOX</b>, Increase the percentage by 20%, wait 20 minutes, repeat until 100% reached
 
     .mb-5
       label.block.text-gray-500.mb-2(for='groups')
@@ -40,6 +92,8 @@ main.p-6.bg-gray-100.max-w-lg.w-full.text-sm.rounded-sm
         name='percentage'
         id='percentage'
         value=@feature.percentage
+        max="#{get_high_percent_activate(@feature)}"
+        min="#{get_low_percent_activate(@feature)}"
         class='hover:border-gray-500'
         type='number'
         step='0.1'
@@ -73,5 +127,8 @@ main.p-6.bg-gray-100.max-w-lg.w-full.text-sm.rounded-sm
       | Update
 
 - history_events = @rollout.respond_to?(:logging) ? @rollout.logging.events(@feature.name).reverse : []
+
+
+
 
 == slim :"features/partials/event_log", locals: { events: history_events }
