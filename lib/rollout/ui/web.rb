@@ -23,12 +23,12 @@ module Rollout::UI
           end
         )
       else
-        slim :'features/index'
+        erb :'features/index'
       end
     end
 
     get '/features/new' do
-      slim :'features/new'
+      erb :'features/new'
     end
 
     post '/features/new' do
@@ -42,7 +42,7 @@ module Rollout::UI
       if json_request?
         json(feature_to_hash(@feature))
       else
-        slim :'features/show'
+        erb :'features/show'
       end
     end
 
@@ -61,6 +61,7 @@ module Rollout::UI
             feature.users = params[:users].split(',').map(&:strip).uniq.sort
           end
           feature.data.update(description: params[:description])
+          feature.data.update(team: params[:team])
           feature.data.update(consumer_cache_break: params[:consumer_cache_break])
           feature.data.update(updated_at: Time.now.to_i)
         end

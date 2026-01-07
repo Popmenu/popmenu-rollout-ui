@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Rollout UI</title>
+    <meta name="viewport" content="width=device-width initial-scale=1">
+    <link rel="stylesheet" href="<%= stylesheet_path('tailwind.min') %>">
+    <style>
+      .tooltip {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black;
+      }
+
+      .tooltip .tooltip-text {
+        visibility: hidden;
+        text-align: center;
+
+        position: absolute;
+        z-index: 1;
+        left: 52px;
+        top: -75px;
+      }
+      .tooltip .tooltip-text-low {
+        text-align: left;
+        top: -2px;
+      }
+      .tooltip .tooltip-text:before {
+        content: '';
+        visibility: hidden;
+        width: 0;
+        height: 0;
+        position: absolute;
+
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid transparent;
+        border-right: 8px solid white;
+        left: -8px;
+        top: 76px;
+        z-index: 1;
+      }
+
+      .tooltip .tooltip-text-low:before {
+        top: -2px;
+      }
+
+      .tooltip:hover .tooltip-text {
+        visibility: visible;
+      }
+
+      .tooltip:hover .tooltip-text:before {
+        visibility: visible;
+      }
+
+      #giant-popover {
+        text-align: left;
+        width: 600px;
+      }
+
+      /* View toggle styles */
+      .view-container.hidden {
+        display: none;
+      }
+      
+      .view-toggle-btn {
+        cursor: pointer;
+      }
+      
+      /* Accordion styles */
+      .accordion-icon {
+        transition: transform 0.3s ease;
+      }
+      
+      .accordion-header[aria-expanded="false"] .accordion-icon {
+        transform: rotate(0deg);
+      }
+      
+      .accordion-header[aria-expanded="true"] .accordion-icon {
+        transform: rotate(90deg);
+      }
+      
+      .accordion-content {
+        transition: max-height 0.3s ease-out;
+      }
+      
+      .accordion-item {
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+      }
+    </style>
+    <script>
+      function toggleAccordion(button) {
+        const accordionItem = button.closest('.accordion-item');
+        const content = accordionItem.querySelector('.accordion-content');
+        const isExpanded = button.getAttribute('aria-expanded') === 'true';
+        
+        if (isExpanded) {
+          content.style.maxHeight = '0px';
+          button.setAttribute('aria-expanded', 'false');
+          button.querySelector('div:last-child').textContent = 'Click to expand';
+        } else {
+          content.style.maxHeight = content.scrollHeight + 'px';
+          button.setAttribute('aria-expanded', 'true');
+          button.querySelector('div:last-child').textContent = 'Click to collapse';
+        }
+      }
+    </script>
+  </head>
+  <body class="bg-gray-100">
+    <!-- Addresses https://stackoverflow.com/questions/21147149/flash-of-unstyled-content-fouc-in-firefox-only-is-ff-slow-renderer -->
+    <script>0</script>
+
+    <div class="container mx-auto font-mono text-gray-700 px-5 pb-20">
+      <h1 class="font-light text-4xl text-gray-600 pt-20">
+        <a href="<%= index_path %>" class="hover:text-blue-700">Rollout</a>
+      </h1>
+
+      <%= yield %>
+    </div>
+  </body>
+</html>
+
