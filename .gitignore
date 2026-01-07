@@ -12,3 +12,6 @@
 
 Gemfile.lock
 *.gem
+
+# Tailwind CLI binary (download with: curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-macos-arm64)
+/tailwindcss
