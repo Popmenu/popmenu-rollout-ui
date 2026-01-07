@@ -182,6 +182,16 @@
       .data-table tbody tr:last-child td {
         border-bottom: none;
       }
+
+      /* Remove focus outline from buttons and headers */
+      button:focus,
+      .btn-primary:focus,
+      .btn-secondary:focus,
+      .view-toggle-btn:focus,
+      .accordion-header:focus,
+      a:focus {
+        outline: none;
+      }
     </style>
     <script>
       function toggleAccordion(button) {
@@ -192,11 +202,9 @@
         if (isExpanded) {
           content.style.maxHeight = '0px';
           button.setAttribute('aria-expanded', 'false');
-          button.querySelector('.accordion-toggle-text').textContent = 'Click to expand';
         } else {
           content.style.maxHeight = content.scrollHeight + 'px';
           button.setAttribute('aria-expanded', 'true');
-          button.querySelector('.accordion-toggle-text').textContent = 'Click to collapse';
         }
       }
     </script>
