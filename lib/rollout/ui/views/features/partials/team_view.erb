@@ -1,0 +1,66 @@
+<div id="team-view" class="view-container">
+  <%
+    # Group features by team
+    features_by_team = @features.group_by do |feature_name|
+      feature = @rollout.get(feature_name)
+      feature.data['team'].to_s.strip.empty? ? 'Uncategorized' : feature.data['team']
+    end.sort_by { |team, _| team == 'Uncategorized' ? 'zzz' : team.downcase }
+  %>
+
+  <div class="space-y-4">
+    <% features_by_team.each_with_index do |(team_name, team_features)| %>
+      <div class="accordion-item">
+        <button 
+          type="button" 
+          class="accordion-header w-full flex items-center justify-between p-5 bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer"
+          onclick="toggleAccordion(this)"
+          aria-expanded="false"
+        >
+          <div class="flex items-center gap-3">
+            <span class="accordion-icon text-gray-800 transition-transform duration-300 transform">
+              <%= icon_chevron_right %>
+            </span>
+            <span class="font-semibold text-gray-800"><%= team_name %></span>
+            <span class="text-xs px-2.5 py-1 bg-slate-100 rounded-full text-slate-500 font-medium">feature count: <%= team_features.count %></span>
+          </div>
+        </button>
+        
+        <div class="accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out;">
+          <div class="overflow-auto border-t border-gray-400">
+            <table class="data-table">
+              <thead>
+                <tr class="bg-gray-50">
+                  <th>Name</th>
+                  <th>Percentage</th>
+                  <th>Groups</th>
+                  <th>Users</th>
+                  <% if @rollout.respond_to?(:logging) %>
+                    <th>Updated</th>
+                  <% end %>
+                  <th>
+                    Cache Break
+                    <div class="pl-1 tooltip cursor-pointer inline">
+                      ?
+                      <div class="tooltip-text tooltip-text-low p-3 rounded-lg bg-white w-56 shadow-xl border border-gray-100">
+                        <span class="text-red-500 font-medium">true</span> will break the consumer cache to update its content.<br>
+                        This results in a temporary increase in latency.
+                      </div>
+                    </div>
+                  </th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <% team_features.each do |feature_name| %>
+                  <% feature = @rollout.get(feature_name) %>
+                  <%= erb :'features/partials/feature_row', locals: { feature: feature, feature_name: feature_name, show_team: false } %>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

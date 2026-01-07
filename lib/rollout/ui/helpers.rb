@@ -132,5 +132,42 @@ module Rollout::UI
 
       [0, feature.percentage - 20].max
     end
+
+    # SVG Icon Helpers
+    def icon_chevron_left(size: 16)
+      %(<svg width="#{size}" height="#{size}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>)
+    end
+
+    def icon_chevron_right(size: 12)
+      %(<svg width="#{size}" height="#{size}" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4.5 2L8.5 6L4.5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>)
+    end
+
+    def icon_trash(size: 14)
+      %(<svg width="#{size}" height="#{size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        <line x1="10" y1="11" x2="10" y2="17"></line>
+        <line x1="14" y1="11" x2="14" y2="17"></line>
+      </svg>)
+    end
+
+    def icon_grid(size: 16)
+      %(<svg width="#{size}" height="#{size}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 3H6V7H2V3Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10 3H14V7H10V3Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M2 9H6V13H2V9Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10 9H14V13H10V9Z" stroke="currentColor" stroke-width="1.5"/>
+      </svg>)
+    end
+
+    def icon_list(size: 16)
+      %(<svg width="#{size}" height="#{size}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 4H14M2 8H14M2 12H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>)
+    end
   end
 end

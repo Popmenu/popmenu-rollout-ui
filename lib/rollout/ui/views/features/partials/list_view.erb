@@ -1,0 +1,38 @@
+<div id="list-view" class="view-container hidden">
+  <div class="card overflow-hidden">
+    <div class="overflow-auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Team</th>
+            <th>Percentage</th>
+            <th>Groups</th>
+            <th>Users</th>
+            <% if @rollout.respond_to?(:logging) %>
+              <th>Updated</th>
+            <% end %>
+            <th>
+              Cache Break
+              <div class="pl-1 tooltip cursor-pointer inline">
+                ?
+                <div class="tooltip-text tooltip-text-low p-3 rounded-lg bg-white w-56 shadow-xl border border-gray-100">
+                  <span class="text-red-500 font-medium">true</span> will break the consumer cache to update its content.<br>
+                  This results in a temporary increase in latency.
+                </div>
+              </div>
+            </th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% @features.each do |feature_name| %>
+            <% feature = @rollout.get(feature_name) %>
+            <%= erb :'features/partials/feature_row', locals: { feature: feature, feature_name: feature_name, show_team: true } %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
