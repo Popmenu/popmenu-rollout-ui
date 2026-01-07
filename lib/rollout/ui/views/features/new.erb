@@ -8,11 +8,57 @@
   <p class="text-sm text-gray-500">Create a new feature flag</p>
 </div>
 
+<% if params[:error] %>
+  <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+    <%= params[:error] %>
+  </div>
+<% end %>
+
 <div class="card p-6 max-w-lg">
   <form action="<%= new_feature_path %>" method="POST">
     <div class="mb-6">
-      <label class="block text-sm font-medium text-gray-700 mb-2" for="name">Feature Name</label>
-      <input class="form-input" name="name" id="name" placeholder="e.g. new_checkout_flow">
+      <label class="block text-sm font-medium text-gray-700 mb-2" for="name">
+        Feature Name <span class="text-red-500">*</span>
+      </label>
+      <input class="form-input" name="name" id="name" placeholder="e.g. new_checkout_flow" value="<%= params[:name] %>" required>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-gray-700 mb-2" for="team">
+        Team <span class="text-red-500">*</span>
+      </label>
+      <% if @teams.any? %>
+        <select class="form-input" name="team" id="team" required onchange="toggleNewTeamInput(this)">
+          <option value="">Select a team...</option>
+          <% @teams.each do |team| %>
+            <option value="<%= team %>" <%= params[:team] == team ? 'selected' : '' %>><%= team %></option>
+          <% end %>
+          <option value="__new__">+ Add new team...</option>
+        </select>
+        <input 
+          class="form-input mt-2 hidden" 
+          name="new_team" 
+          id="new_team" 
+          placeholder="Enter new team name"
+          minlength="2"
+        >
+        <script>
+          function toggleNewTeamInput(select) {
+            const newTeamInput = document.getElementById('new_team');
+            if (select.value === '__new__') {
+              newTeamInput.classList.remove('hidden');
+              newTeamInput.required = true;
+              newTeamInput.focus();
+            } else {
+              newTeamInput.classList.add('hidden');
+              newTeamInput.required = false;
+              newTeamInput.value = '';
+            }
+          }
+        </script>
+      <% else %>
+        <input class="form-input" name="team" id="team" placeholder="e.g. Platform, Consumer, Dashboard" value="<%= params[:team] %>" required minlength="2">
+      <% end %>
     </div>
 
     <div class="flex items-center justify-end pt-4 border-t border-gray-100">

@@ -1,6 +1,7 @@
 require "sinatra"
 require "sinatra/json"
 require "rollout"
+require "cgi"
 
 require "rollout/ui/version"
 require "rollout/ui/config"
@@ -28,16 +29,46 @@ module Rollout::UI
     end
 
     get '/features/new' do
+      @rollout = config.get(:instance)
+      @teams = @rollout.features.map { |f| @rollout.get(f).data['team'] }.compact.reject(&:empty?).uniq.sort
       erb :'features/new'
     end
 
     post '/features/new' do
+      # Validate required fields
+      if params[:name].to_s.strip.empty?
+        redirect "#{new_feature_path}?error=Feature name is required&team=#{CGI.escape(params[:team].to_s)}"
+      end
+
+      # Handle team selection - use new_team if "Add new team" was selected
+      team = params[:team] == '__new__' ? params[:new_team] : params[:team]
+      team = team.to_s.strip
+
+      if team.empty?
+        redirect "#{new_feature_path}?error=Team is required&name=#{CGI.escape(params[:name].to_s)}"
+      end
+
+      if team.length < 2
+        redirect "#{new_feature_path}?error=Team name must be at least 2 characters&name=#{CGI.escape(params[:name].to_s)}"
+      end
+
+      rollout = config.get(:instance)
+      actor = config.get(:actor, scope: self)
+
+      with_rollout_context(rollout, actor: actor) do
+        rollout.with_feature(params[:name]) do |feature|
+          feature.data.update(team: team.strip)
+          feature.data.update(updated_at: Time.now.to_i)
+        end
+      end
+
       redirect feature_path(params[:name])
     end
 
     get '/features/:feature_name' do
       @rollout = config.get(:instance)
       @feature = @rollout.get(params[:feature_name])
+      @teams = @rollout.features.map { |f| @rollout.get(f).data['team'] }.compact.reject(&:empty?).uniq.sort
 
       if json_request?
         json(feature_to_hash(@feature))
@@ -61,7 +92,9 @@ module Rollout::UI
             feature.users = params[:users].split(',').map(&:strip).uniq.sort
           end
           feature.data.update(description: params[:description])
-          feature.data.update(team: params[:team])
+          # Handle team selection - use new_team if "Add new team" was selected
+          team = params[:team] == '__new__' ? params[:new_team] : params[:team]
+          feature.data.update(team: team.to_s.strip)
           feature.data.update(consumer_cache_break: params[:consumer_cache_break])
           feature.data.update(updated_at: Time.now.to_i)
         end
