@@ -8,7 +8,7 @@
     <a class="text-blue-600 hover:text-blue-700 font-medium" href="<%= feature_path(feature.name) %>">
       <%= feature_name %>
     </a>
-    <% if !feature.data.fetch('description', '').to_s.empty? %>
+    <% if !feature.data['description'].to_s.empty? %>
       <div class="text-gray-500 text-xs mt-1"><%= feature.data['description'] %></div>
     <% end %>
   </td>

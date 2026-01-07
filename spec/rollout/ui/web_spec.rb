@@ -98,4 +98,92 @@ RSpec.describe 'Web UI' do
 
     ROLLOUT.delete(:fake_test_feature_for_rollout_ui_webspec)
   end
+
+  describe "create feature" do
+    it "requires a team name" do
+      post '/features/new', name: 'test_feature', team: ''
+
+      expect(last_response).to be_redirect
+      expect(last_response.location).to include('error=Team is required')
+    end
+
+    it "requires team name to be at least 2 characters" do
+      post '/features/new', name: 'test_feature', team: 'A'
+
+      expect(last_response).to be_redirect
+      expect(last_response.location).to include('error=Team name must be at least 2 characters')
+    end
+
+    it "creates feature with valid team name" do
+      post '/features/new', name: 'test_feature_with_team', team: 'Engineering'
+
+      expect(last_response).to be_redirect
+      expect(last_response.location).to include('/features/test_feature_with_team')
+
+      feature = ROLLOUT.get(:test_feature_with_team)
+      expect(feature.data['team']).to eq 'Engineering'
+
+      ROLLOUT.delete(:test_feature_with_team)
+    end
+
+    it "creates feature with new team option" do
+      post '/features/new', name: 'test_feature_new_team', team: '__new__', new_team: 'Platform'
+
+      expect(last_response).to be_redirect
+      expect(last_response.location).to include('/features/test_feature_new_team')
+
+      feature = ROLLOUT.get(:test_feature_new_team)
+      expect(feature.data['team']).to eq 'Platform'
+
+      ROLLOUT.delete(:test_feature_new_team)
+    end
+  end
+
+  describe "edit feature" do
+    before do
+      ROLLOUT.activate(:edit_test_feature)
+      ROLLOUT.with_feature(:edit_test_feature) do |feature|
+        feature.data.update(team: 'InitialTeam')
+      end
+    end
+
+    after do
+      ROLLOUT.delete(:edit_test_feature)
+    end
+
+    it "requires a team name" do
+      post '/features/edit_test_feature', team: '', percentage: '50'
+
+      expect(last_response).to be_redirect
+      expect(last_response.location).to include('error=Team is required')
+    end
+
+    it "requires team name to be at least 2 characters" do
+      post '/features/edit_test_feature', team: 'A', percentage: '50'
+
+      expect(last_response).to be_redirect
+      expect(last_response.location).to include('error=Team name must be at least 2 characters')
+    end
+
+    it "updates feature with valid team name" do
+      post '/features/edit_test_feature', team: 'NewTeam', percentage: '75'
+
+      expect(last_response).to be_redirect
+      expect(last_response.location).to include('/features/edit_test_feature')
+
+      feature = ROLLOUT.get(:edit_test_feature)
+      expect(feature.data['team']).to eq 'NewTeam'
+      expect(feature.percentage).to eq 75.0
+    end
+
+    it "updates feature with new team option" do
+      post '/features/edit_test_feature', team: '__new__', new_team: 'DataScience', percentage: '100'
+
+      expect(last_response).to be_redirect
+      expect(last_response.location).to include('/features/edit_test_feature')
+
+      feature = ROLLOUT.get(:edit_test_feature)
+      expect(feature.data['team']).to eq 'DataScience'
+    end
+  end
 end

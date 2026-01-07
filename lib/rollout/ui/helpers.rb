@@ -89,6 +89,26 @@ module Rollout::UI
       request.env['HTTP_ACCEPT'] == 'application/json'
     end
 
+    # Extracts team from params, handling the "Add new team" option
+    def extract_team_from_params
+      team = params[:team] == '__new__' ? params[:new_team] : params[:team]
+      team.to_s.strip
+    end
+
+    # Validates team and redirects with error if invalid
+    # Returns the validated team if valid, otherwise redirects
+    def validate_team!(team, error_redirect_path)
+      if team.empty?
+        redirect "#{error_redirect_path}?error=Team is required"
+      end
+
+      if team.length < 2
+        redirect "#{error_redirect_path}?error=Team name must be at least 2 characters"
+      end
+
+      team
+    end
+
     # Filters features by user and group if those params are provided
     def filtered_features(rollout, feature_names)
       feature_names.select do |feature_name|
