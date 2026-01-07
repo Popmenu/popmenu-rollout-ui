@@ -93,7 +93,7 @@ module Rollout::UI
         end
       end
 
-      redirect feature_path(params[:feature_name])
+      redirect "#{feature_path(params[:feature_name])}?success=Feature updated successfully"
     end
 
     post '/features/:feature_name/activate-percentage' do
@@ -112,9 +112,10 @@ module Rollout::UI
 
     post '/features/:feature_name/delete' do
       @rollout = config.get(:instance)
-      @rollout.delete(params[:feature_name])
+      feature_name = params[:feature_name]
+      @rollout.delete(feature_name)
 
-      redirect index_path
+      redirect "#{index_path}?success=Feature '#{feature_name}' was successfully deleted"
     end
   end
 end

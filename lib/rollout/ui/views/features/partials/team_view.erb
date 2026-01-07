@@ -21,7 +21,7 @@
           else 'bg-red-100 text-red-600'
         end
       %>
-      <div class="accordion-item">
+      <div class="accordion-item" data-team="<%= team_name %>">
         <button 
           type="button" 
           class="accordion-header w-full flex items-center justify-between p-5 bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer"
@@ -34,7 +34,7 @@
             </span>
             <span class="font-semibold text-gray-800"><%= team_name %></span>
             <span class="text-xs px-2.5 py-1 rounded-full font-medium <%= count_badge_classes %>"><%= total_features %> features</span>
-            <span class="text-xs px-2.5 py-1 bg-emerald-100 rounded-full text-emerald-600 font-medium"><%= fully_activated %>/<%= total_features %> fully activated</span>
+            <span class="text-xs px-2.5 py-1 bg-blue-100 rounded-full text-blue-600 font-medium"><%= fully_activated %>/<%= total_features %> fully activated</span>
           </div>
         </button>
         

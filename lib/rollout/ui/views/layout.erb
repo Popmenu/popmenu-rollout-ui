@@ -11,6 +11,47 @@
         background-color: #ecf0f1;
       }
 
+      /* Flash message animations */
+      .flash-message {
+        animation: flash-fade-in 0.3s ease-out;
+        overflow: hidden;
+      }
+      
+      .flash-message.fade-out {
+        animation: flash-fade-out 0.4s ease-out forwards;
+      }
+      
+      @keyframes flash-fade-in {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      @keyframes flash-fade-out {
+        0% {
+          opacity: 1;
+          max-height: 100px;
+          padding-top: 1rem;
+          padding-bottom: 1rem;
+          margin-bottom: 1rem;
+        }
+        50% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 0;
+          max-height: 0;
+          padding-top: 0;
+          padding-bottom: 0;
+          margin-bottom: 0;
+        }
+      }
+
       .card {
         background: white;
         border-radius: 12px;
@@ -194,18 +235,88 @@
       }
     </style>
     <script>
+      const ACCORDION_STORAGE_KEY = 'rollout_expanded_teams';
+
+      function getExpandedTeams() {
+        try {
+          return JSON.parse(localStorage.getItem(ACCORDION_STORAGE_KEY)) || [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveExpandedTeams(teams) {
+        localStorage.setItem(ACCORDION_STORAGE_KEY, JSON.stringify(teams));
+      }
+
       function toggleAccordion(button) {
         const accordionItem = button.closest('.accordion-item');
         const content = accordionItem.querySelector('.accordion-content');
+        const teamName = accordionItem.dataset.team;
         const isExpanded = button.getAttribute('aria-expanded') === 'true';
+        
+        let expandedTeams = getExpandedTeams();
         
         if (isExpanded) {
           content.style.maxHeight = '0px';
           button.setAttribute('aria-expanded', 'false');
+          expandedTeams = expandedTeams.filter(t => t !== teamName);
         } else {
           content.style.maxHeight = content.scrollHeight + 'px';
           button.setAttribute('aria-expanded', 'true');
+          if (!expandedTeams.includes(teamName)) {
+            expandedTeams.push(teamName);
+          }
         }
+        
+        saveExpandedTeams(expandedTeams);
+      }
+
+      function restoreAccordionState() {
+        const expandedTeams = getExpandedTeams();
+        expandedTeams.forEach(teamName => {
+          const accordionItem = document.querySelector(`.accordion-item[data-team="${CSS.escape(teamName)}"]`);
+          if (accordionItem) {
+            const button = accordionItem.querySelector('.accordion-header');
+            const content = accordionItem.querySelector('.accordion-content');
+            // Disable transition to prevent jitter on page load
+            content.style.transition = 'none';
+            button.setAttribute('aria-expanded', 'true');
+            content.style.maxHeight = content.scrollHeight + 'px';
+            // Force reflow then re-enable transition
+            content.offsetHeight;
+            content.style.transition = '';
+          }
+        });
+      }
+
+      // Restore state as early as possible to minimize jitter
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', restoreAccordionState);
+      } else {
+        restoreAccordionState();
+      }
+
+      // Auto-dismiss flash messages after 2 seconds
+      function initFlashMessages() {
+        document.querySelectorAll('.flash-message').forEach(flash => {
+          setTimeout(() => {
+            flash.classList.add('fade-out');
+            flash.addEventListener('animationend', () => flash.remove());
+          }, 2000);
+        });
+      }
+
+      function dismissFlash(button) {
+        const flash = button.closest('.flash-message');
+        flash.classList.add('fade-out');
+        flash.addEventListener('animationend', () => flash.remove());
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initFlashMessages);
+      } else {
+        initFlashMessages();
       }
     </script>
   </head>
