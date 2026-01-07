@@ -2,64 +2,65 @@
 <% show_header ||= false %>
 
 <% if events.any? %>
-  <h2 class="font-semibold text-xl text-gray-500 pt-20 flex items-center">
-    History
-  </h2>
-  <div class="w-8 h-1 bg-gray-300 my-10"></div>
-
-  <div class="overflow-auto scrolling-touch">
-    <table class="text-sm w-100 text-left w-full">
-      <% if show_header %>
-        <thead class="font-semibold text-gray-600 border-b border-gray-200">
-          <% if show_feature %>
-            <th class="pb-2 pr-3">Feature</th>
-          <% end %>
-          <th class="pb-2 pr-3">Action</th>
-          <th class="pl-2"></th>
-        </thead>
-      <% end %>
-
-      <tbody class="text-gray-600 border-t border-gray-200">
-        <% events.each do |event| %>
-          <tr class="border-b border-gray-200">
-            <% if show_feature %>
-              <td class="py-2 whitespace-no-wrap">
-                <a class="text-blue-600 hover:text-blue-700 hover:underline" href="<%= feature_path(event.feature) %>">
-                  <%= event.feature %>
-                </a>
-              </td>
-            <% end %>
-            <td class="py-2 pr-3 whitespace-no-wrap">
-              <% if event.name == "update" %>
-                <% if event.context && event.context[:actor] %>
-                  <% if config.defined?(:actor_url) %>
-                    <a class="underline" href="<%= config.get(:actor_url, event.context[:actor]) %>" target="_blank">
-                      <%= event.context[:actor] %>
-                    </a>
-                  <% else %>
-                    <%= event.context[:actor] %>
-                  <% end %>
-                <% else %>
-                  unidentified user
-                <% end %>
-                <% changes = event.data.fetch(:before).keys.map do |key|
-                  before = format_change_value(event.data.fetch(:before).fetch(key))
-                  after = format_change_value(event.data.fetch(:after).fetch(key))
-                  "#{format_change_key(key)} from #{before} to #{after}"
-                end %>
-                changed <%= changes.join(', ') %>
-              <% else %>
-                <%= event.data %>
+  <div class="mt-8">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">History</h3>
+    
+    <div class="card overflow-hidden">
+      <table class="data-table">
+        <% if show_header %>
+          <thead>
+            <tr>
+              <% if show_feature %>
+                <th>Feature</th>
               <% end %>
-            </td>
-
-            <td class="flex items-center py-2 justify-end whitespace-no-wrap pl-3">
-              <%= time_ago(event.created_at) %>
-            </td>
-          </tr>
+              <th>Action</th>
+              <th class="text-right">Time</th>
+            </tr>
+          </thead>
         <% end %>
-      </tbody>
-    </table>
+
+        <tbody>
+          <% events.each do |event| %>
+            <tr>
+              <% if show_feature %>
+                <td class="whitespace-nowrap">
+                  <a class="text-blue-600 hover:text-blue-700 font-medium" href="<%= feature_path(event.feature) %>">
+                    <%= event.feature %>
+                  </a>
+                </td>
+              <% end %>
+              <td>
+                <% if event.name == "update" %>
+                  <span class="text-gray-600">
+                    <% if event.context && event.context[:actor] %>
+                      <% if config.defined?(:actor_url) %>
+                        <a class="text-blue-600 hover:text-blue-700 font-medium" href="<%= config.get(:actor_url, event.context[:actor]) %>" target="_blank">
+                          <%= event.context[:actor] %>
+                        </a>
+                      <% else %>
+                        <span class="font-medium"><%= event.context[:actor] %></span>
+                      <% end %>
+                    <% else %>
+                      <span class="text-gray-400">unidentified user</span>
+                    <% end %>
+                    <% changes = event.data.fetch(:before).keys.map do |key|
+                      before = format_change_value(event.data.fetch(:before).fetch(key))
+                      after = format_change_value(event.data.fetch(:after).fetch(key))
+                      "#{format_change_key(key)} from #{before} to #{after}"
+                    end %>
+                    changed <%= changes.join(', ') %>
+                  </span>
+                <% else %>
+                  <span class="text-gray-500"><%= event.data %></span>
+                <% end %>
+              </td>
+              <td class="whitespace-nowrap text-right text-gray-400">
+                <%= time_ago(event.created_at) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   </div>
 <% end %>
-
