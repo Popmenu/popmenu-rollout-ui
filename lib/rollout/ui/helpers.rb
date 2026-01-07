@@ -134,19 +134,19 @@ module Rollout::UI
     end
 
     # SVG Icon Helpers
-    def icon_chevron_left(size: 16)
+    def chevron_left_icon(size: 16)
       %(<svg width="#{size}" height="#{size}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>)
     end
 
-    def icon_chevron_right(size: 12)
+    def chevron_right_icon(size: 12)
       %(<svg width="#{size}" height="#{size}" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M4.5 2L8.5 6L4.5 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>)
     end
 
-    def icon_trash(size: 14)
+    def trash_icon(size: 14)
       %(<svg width="#{size}" height="#{size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="3 6 5 6 21 6"></polyline>
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -155,7 +155,7 @@ module Rollout::UI
       </svg>)
     end
 
-    def icon_team(size: 16)
+    def team_icon(size: 16)
       %(<svg width="#{size}" height="#{size}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="8" cy="5" r="2" stroke="currentColor" stroke-width="1.5"/>
         <path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -166,7 +166,7 @@ module Rollout::UI
       </svg>)
     end
 
-    def icon_list(size: 16)
+    def list_icon(size: 16)
       %(<svg width="#{size}" height="#{size}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M2 4H14M2 8H14M2 12H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>)
