@@ -155,12 +155,14 @@ module Rollout::UI
       </svg>)
     end
 
-    def icon_grid(size: 16)
+    def icon_team(size: 16)
       %(<svg width="#{size}" height="#{size}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M2 3H6V7H2V3Z" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M10 3H14V7H10V3Z" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M2 9H6V13H2V9Z" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M10 9H14V13H10V9Z" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="8" cy="5" r="2" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M4 14c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="3" cy="6" r="1.5" stroke="currentColor" stroke-width="1"/>
+        <path d="M1 12.5c0-1.4 0.9-2.5 2-2.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+        <circle cx="13" cy="6" r="1.5" stroke="currentColor" stroke-width="1"/>
+        <path d="M15 12.5c0-1.4-0.9-2.5-2-2.5" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
       </svg>)
     end
 
