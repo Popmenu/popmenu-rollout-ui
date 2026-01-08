@@ -3,12 +3,29 @@
         const percentInput = document.getElementById('percentage');
         const startingPercent = Number(percentInput.value);
         const cacheBreakToggle = document.getElementById('consumer_cache_break');
+        const form = document.getElementById('updateFormSubmit');
+        const featureName = '<%= @feature.name %>';
 
         cacheBreakToggle.onchange = ({ target }) => {
             let maxPercent = target.checked ? Math.min(100, startingPercent + 20) : 100;
             let minPercent = target.checked ? Math.max(startingPercent - 20, 0) : 0;
             percentInput.max = maxPercent.toString();
             percentInput.min = minPercent.toString();
+        };
+
+        form.onsubmit = (e) => {
+            const currentPercent = Number(percentInput.value);
+            const cacheBreakEnabled = cacheBreakToggle.checked;
+            
+            // Only show warning if percentage changed and cache break is enabled
+            if (currentPercent !== startingPercent && cacheBreakEnabled) {
+                const message = `Please allow 20 minutes between changes for caching to recover.\nAre you sure you want to update ${featureName} to ${currentPercent}%?`;
+                if (!confirm(message)) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+            return true;
         };
     };
 </script>
