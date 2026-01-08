@@ -99,15 +99,17 @@ module Rollout::UI
     post '/features/:feature_name/activate-percentage' do
       rollout = config.get(:instance)
       actor = config.get(:actor, scope: self)
+      feature_name = params[:feature_name]
+      percentage = params[:percentage].to_f.clamp(0.0, 100.0)
 
       with_rollout_context(rollout, actor: actor) do
-        rollout.with_feature(params[:feature_name]) do |feature|
-          feature.percentage = params[:percentage].to_f.clamp(0.0, 100.0)
+        rollout.with_feature(feature_name) do |feature|
+          feature.percentage = percentage
           feature.data.update(updated_at: Time.now.to_i)
         end
       end
 
-      redirect index_path
+      redirect "#{index_path}?success=#{CGI.escape("'#{feature_name}' updated to #{percentage}%")}"
     end
 
     post '/features/:feature_name/delete' do

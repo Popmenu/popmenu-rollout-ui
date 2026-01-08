@@ -192,6 +192,14 @@ module Rollout::UI
       </svg>)
     end
 
+    def info_icon(size: 16)
+      %(<svg width="#{size}" height="#{size}" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="8" cy="8" r="8" fill="#3b82f6"/>
+        <circle cx="8" cy="4.5" r="1.25" fill="white"/>
+        <rect x="6.75" y="6.75" width="2.5" height="6" rx="1.25" fill="white"/>
+      </svg>)
+    end
+
     # Returns consistent Tailwind color classes for a team badge based on team name
     TEAM_COLORS = [
       'bg-blue-100 text-blue-700',

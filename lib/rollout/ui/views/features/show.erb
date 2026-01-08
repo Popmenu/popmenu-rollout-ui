@@ -19,29 +19,17 @@
     Back to overview
   </a>
 
-  <% if params[:success] %>
-    <div class="flash-message mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm flex items-center justify-between">
-      <span><%= params[:success] %></span>
-      <button type="button" onclick="dismissFlash(this)" class="text-emerald-500 hover:text-emerald-700">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M4 4L12 12M12 4L4 12" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </div>
-  <% end %>
+  <%= erb :"features/partials/flash_messages" %>
 
-  <% if params[:error] %>
-    <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-      <%= params[:error] %>
-    </div>
-  <% end %>
-
-  <div class="card p-6">
-    <div class="mb-6 pb-6 border-b border-gray-200">
+  <div class="card">
+    <div class="px-6 pt-6 pb-4">
       <h2 class="text-xl font-semibold text-gray-800 mb-1"><%= @feature.name %></h2>
       <p class="text-sm text-gray-500">Configure feature flag settings</p>
     </div>
-    <form id="updateFormSubmit" action="<%= feature_path(@feature.name) %>" method="POST">
+
+    <div class="border-t border-gray-200"></div>
+
+    <form id="updateFormSubmit" class="px-6 pt-6" action="<%= feature_path(@feature.name) %>" method="POST">
     <input type="hidden" name="last_updated_at" value="<%= @feature.data['updated_at'] %>">
     
     <div class="mb-6">
@@ -49,93 +37,14 @@
       <input class="form-input" name="description" id="description" value="<%= @feature.data['description'] %>" placeholder="Brief description of this feature flag">
     </div>
 
-    <div class="mb-6">
-      <label class="block text-sm font-medium text-gray-700 mb-2" for="team">Team</label>
-      <% current_team = @feature.data['team'].to_s %>
-      <% if @teams.any? %>
-        <select class="form-input" name="team" id="team" onchange="toggleNewTeamInput(this)">
-          <option value="">Select a team...</option>
-          <% @teams.each do |team| %>
-            <option value="<%= team %>" <%= current_team == team ? 'selected' : '' %>><%= team %></option>
-          <% end %>
-          <option value="__new__">+ Add new team...</option>
-        </select>
-        <input 
-          class="form-input mt-2 hidden" 
-          name="new_team" 
-          id="new_team" 
-          placeholder="Enter new team name"
-          minlength="2"
-        >
-        <script>
-          function toggleNewTeamInput(select) {
-            const newTeamInput = document.getElementById('new_team');
-            if (select.value === '__new__') {
-              newTeamInput.classList.remove('hidden');
-              newTeamInput.required = true;
-              newTeamInput.focus();
-            } else {
-              newTeamInput.classList.add('hidden');
-              newTeamInput.required = false;
-              newTeamInput.value = '';
-            }
-          }
-        </script>
-      <% else %>
-        <input class="form-input" name="team" id="team" value="<%= current_team %>" placeholder="e.g. Platform, Consumer, Dashboard" minlength="2">
-      <% end %>
-    </div>
+    <%= erb :"features/partials/team_input", locals: { current_team: @feature.data['team'].to_s } %>
 
-    <div class="mb-6 flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-      <input name="consumer_cache_break" value="false" type="hidden">
-      <input 
-        name="consumer_cache_break" 
-        id="consumer_cache_break" 
-        value="true" 
-        type="checkbox" 
-        class="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-        <%= @feature.data['consumer_cache_break'] == 'true' ? 'checked' : '' %>
-      >
-      <div>
-        <label class="font-medium text-gray-800" for="consumer_cache_break">Consumer Cache Break</label>
-        <div class="tooltip cursor-pointer ml-2 inline">
-          <span class="text-xs text-gray-500">What's this?</span>
-          <div class="tooltip-text p-5 rounded-lg bg-white shadow-xl border border-gray-100" id="giant-popover">
-            <p class="text-gray-700">
-              Check this box if you <b>need</b> a consumer-side cache break on activation. A cache break may be unnecessary even
-              if the flag is used on the consumer side.
-            </p>
-            <p class="text-sm font-medium text-gray-800 my-3">
-              Example scenarios to determine need
-            </p>
-            <div class="text-sm text-gray-600">
-              <ol class="list-decimal pl-6 space-y-3">
-                <li>
-                  The flag is passed to the consumer side and you need the interface to update immediately on each restaurant's activation and you'll be activation slowly over time.
-                  <p class="mt-2">
-                    <span class="font-medium text-emerald-600">Actions:</span> <b>CHECK THE BOX</b>, Update the percentage/ids/groups to what you need.<br>
-                    Percentage cannot change by more that 20%, restaurants will update immediately
-                  </p>
-                </li>
-                <li>
-                  <p>
-                    The flag is passed to the consumer side, you need to and are ready to activate to 100%
-                  </p>
-                  <p class="mt-2">
-                    <span class="font-medium text-blue-600">Option A:</span> The interface update can wait until the next release (usually tomorrow AM)<br>
-                    <span class="font-medium text-emerald-600">Actions:</span> <b>UNCHECK THE BOX</b>, update to 100%, wait for tomorrow morning's release.
-                  </p>
-                  <p class="mt-2">
-                    <span class="font-medium text-blue-600">Option B:</span> It needs to activate and update consumer interface ASAP.<br>
-                    <span class="font-medium text-emerald-600">Actions:</span> <b>CHECK THE BOX</b>, Increase the percentage by 20%, wait 20 minutes, repeat until 100% reached
-                  </p>
-                </li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <%= erb :"features/partials/toggle_input", locals: { 
+      name: 'consumer_cache_break', 
+      label: 'Consumer Cache Break', 
+      checked: @feature.data['consumer_cache_break'] == 'true',
+      tooltip: 'cache_break_tooltip'
+    } %>
 
     <div class="mb-6">
       <label class="block text-sm font-medium text-gray-700 mb-2" for="groups">
@@ -159,7 +68,7 @@
       <input class="form-input" name="percentage" id="percentage" value="<%= @feature.percentage %>" max="<%= get_high_percent_activate(@feature) %>" min="<%= get_low_percent_activate(@feature) %>" type="number" step="0.1">
     </div>
 
-    <div class="mb-6">
+    <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">Users</label>
       <% if @feature.users.count > 150 %>
         <div class="form-input bg-gray-50 text-gray-500">
@@ -171,9 +80,9 @@
     </div>
   </form>
 
-  <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+  <div class="flex items-center justify-between px-6 py-6 border-t border-gray-100">
     <form action="<%= delete_feature_path(@feature.name) %>" method="POST">
-      <button class="text-sm px-4 py-2 font-medium text-red-500 border border-red-500 hover:text-red-700 hover:border-red-700 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2" type="submit" onclick="return confirm('Are you sure you want to delete <%= @feature.name %>?')">
+      <button class="text-sm px-5 py-3 font-semibold text-red-500 border border-red-500 hover:text-red-700 hover:border-red-700 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-2" type="submit" onclick="return confirm('Are you sure you want to delete <%= @feature.name %>?')">
         <%= trash_icon %>
         Delete Feature
       </button>
