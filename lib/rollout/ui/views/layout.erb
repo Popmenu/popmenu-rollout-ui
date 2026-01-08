@@ -127,7 +127,7 @@
         visibility: hidden;
         opacity: 0;
         position: absolute;
-        z-index: 50;
+        z-index: 1000;
         left: 50%;
         bottom: calc(100% + 8px);
         transform: translateX(-50%);
@@ -152,6 +152,19 @@
       .info-tooltip:hover .info-tooltip-content {
         visibility: visible;
         opacity: 1;
+      }
+      
+      /* Tooltip positioned below trigger (for use inside overflow:hidden containers) */
+      .info-tooltip-content.info-tooltip-below {
+        bottom: auto;
+        top: calc(100% + 8px);
+      }
+      
+      .info-tooltip-content.info-tooltip-below::after {
+        top: auto;
+        bottom: 100%;
+        border-top-color: transparent;
+        border-bottom-color: white;
       }
 
       .card {
@@ -243,12 +256,13 @@
       .accordion-content {
         transition: max-height 0.3s ease-out;
         background: white;
+        overflow: hidden;
       }
       
       .accordion-item {
         background: white;
         border-radius: 12px;
-        overflow: hidden;
+        /* overflow: hidden; */
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
       }
 
@@ -376,10 +390,13 @@
         
         if (isExpanded) {
           content.style.maxHeight = '0px';
+          content.style.overflow = 'hidden';
           button.setAttribute('aria-expanded', 'false');
           expandedTeams = expandedTeams.filter(t => t !== teamName);
         } else {
           content.style.maxHeight = content.scrollHeight + 'px';
+          // allows cache break tooltip to show
+          setTimeout(() => content.style.overflow = 'visible', 100);
           button.setAttribute('aria-expanded', 'true');
           if (!expandedTeams.includes(teamName)) {
             expandedTeams.push(teamName);
@@ -398,6 +415,7 @@
             const content = accordionItem.querySelector('.accordion-content');
             // Disable transition to prevent jitter on page load
             content.style.transition = 'none';
+            content.style.overflow = 'visible';
             button.setAttribute('aria-expanded', 'true');
             content.style.maxHeight = content.scrollHeight + 'px';
             // Force reflow then re-enable transition
