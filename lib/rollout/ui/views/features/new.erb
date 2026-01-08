@@ -1,9 +1,6 @@
 <div class="flex justify-center">
   <div class="w-full max-w-lg">
-    <a class="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1" href="<%= index_path %>">
-      <%= chevron_left_icon %>
-      Back to overview
-    </a>
+<%= erb :"features/partials/back_link" %>
 
     <%= erb :"features/partials/flash_messages" %>
 
