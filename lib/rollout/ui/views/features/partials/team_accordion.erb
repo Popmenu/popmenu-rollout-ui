@@ -2,14 +2,6 @@
 <%
   total_features = team_features.count
   fully_activated = team_features.count { |fn| @rollout.get(fn).percentage == 100 }
-  
-  # Color badge based on feature count: green < 15, yellow 15-29, orange 30-44, red 45+
-  count_badge_classes = case total_features
-    when 0..14 then 'bg-emerald-100 text-emerald-600'
-    when 15..29 then 'bg-yellow-100 text-yellow-700'
-    when 30..44 then 'bg-orange-100 text-orange-600'
-    else 'bg-red-100 text-red-600'
-  end
 %>
 <div class="accordion-item" data-team="<%= team_name %>">
   <button 
@@ -23,7 +15,7 @@
         <%= chevron_right_icon %>
       </span>
       <span class="font-semibold text-gray-800"><%= team_name %></span>
-      <span class="text-xs px-2.5 py-1 rounded-full font-medium <%= count_badge_classes %>"><%= total_features %> features</span>
+      <span class="text-xs px-2.5 py-1 rounded-full font-medium <%= feature_count_badge_classes(total_features) %>"><%= total_features %> features</span>
       <span class="text-xs px-2.5 py-1 bg-blue-100 rounded-full text-blue-600 font-medium"><%= fully_activated %>/<%= total_features %> fully activated</span>
     </div>
   </button>
@@ -31,19 +23,7 @@
   <div class="accordion-content" style="max-height: 0; transition: max-height 0.2s ease-out;">
     <div class="border-t border-gray-400">
       <table class="data-table">
-        <thead>
-          <tr class="bg-gray-50">
-            <th>Name</th>
-            <th>Percentage</th>
-            <th>Groups</th>
-            <th>Users</th>
-            <% if @rollout.respond_to?(:logging) %>
-              <th>Updated</th>
-            <% end %>
-            <%= erb :"features/partials/cache_break_header" %>
-            <th class="text-right">Actions</th>
-          </tr>
-        </thead>
+        <%= erb :"features/partials/table_header", locals: { show_team: false, row_class: 'bg-gray-50' } %>
 
         <tbody>
           <% team_features.each do |feature_name| %>

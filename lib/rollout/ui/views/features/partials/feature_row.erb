@@ -40,7 +40,7 @@
       <span class="text-gray-600"><%= feature.users.count %></span>
     <% end %>
   </td>
-  <% if @rollout.respond_to?(:logging) %>
+  <% if has_logging? %>
     <td class="whitespace-nowrap text-gray-500">
       <%= time_ago(@rollout.logging.updated_at(feature_name)) %>
     </td>

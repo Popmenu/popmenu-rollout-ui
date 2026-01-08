@@ -2,20 +2,7 @@
   <div class="card overflow-hidden">
     <div class="overflow-auto">
       <table class="data-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Team</th>
-            <th>Percentage</th>
-            <th>Groups</th>
-            <th>Users</th>
-            <% if @rollout.respond_to?(:logging) %>
-              <th>Updated</th>
-            <% end %>
-<%= erb :"features/partials/cache_break_header" %>
-            <th class="text-center">Actions</th>
-          </tr>
-        </thead>
+        <%= erb :"features/partials/table_header", locals: { show_team: true } %>
 
         <tbody>
           <% @features.each do |feature_name| %>

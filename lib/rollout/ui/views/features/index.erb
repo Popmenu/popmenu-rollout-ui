@@ -21,6 +21,6 @@
 
 <%= erb :"features/partials/team_view" %>
 
-<% global_history_events = @rollout.respond_to?(:logging) ? @rollout.logging.global_events.reverse : [] %>
+<% global_history_events = has_logging? ? @rollout.logging.global_events.reverse : [] %>
 
 <%= erb :"features/partials/event_log", locals: { events: global_history_events, show_feature: true, show_header: true } %>

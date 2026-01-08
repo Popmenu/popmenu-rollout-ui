@@ -1,0 +1,19 @@
+<%# locals: show_team, row_class %>
+<% show_team ||= false %>
+<% row_class ||= '' %>
+<thead>
+  <tr class="<%= row_class %>">
+    <th>Name</th>
+    <% if show_team %>
+      <th>Team</th>
+    <% end %>
+    <th>Percentage</th>
+    <th>Groups</th>
+    <th>Users</th>
+    <% if has_logging? %>
+      <th>Updated</th>
+    <% end %>
+    <%= erb :"features/partials/cache_break_header" %>
+    <th class="<%= show_team ? 'text-center' : 'text-right' %>">Actions</th>
+  </tr>
+</thead>

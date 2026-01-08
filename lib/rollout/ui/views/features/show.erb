@@ -92,7 +92,7 @@
   </div>
   </div>
 
-  <% history_events = @rollout.respond_to?(:logging) ? @rollout.logging.events(@feature.name).reverse : [] %>
+  <% history_events = has_logging? ? @rollout.logging.events(@feature.name).reverse : [] %>
 
   <%= erb :"features/partials/event_log", locals: { events: history_events } %>
 </div>

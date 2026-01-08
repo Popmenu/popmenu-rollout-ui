@@ -50,6 +50,21 @@ module Rollout::UI
       Rollout::UI.config
     end
 
+    def has_logging?
+      @rollout.respond_to?(:logging)
+    end
+
+    # Returns badge color classes based on feature count
+    # green < 15, yellow 15-29, orange 30-44, red 45+
+    def feature_count_badge_classes(count)
+      case count
+      when 0..14 then 'bg-emerald-100 text-emerald-600'
+      when 15..29 then 'bg-yellow-100 text-yellow-700'
+      when 30..44 then 'bg-orange-100 text-orange-600'
+      else 'bg-red-100 text-red-600'
+      end
+    end
+
     def time_ago(time)
       return '' unless time
 
