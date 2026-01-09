@@ -4,9 +4,8 @@
         <%= erb :"features/partials/table_header", locals: { show_team: true } %>
 
         <tbody>
-          <% @features.each do |feature_name| %>
-            <% feature = @rollout.get(feature_name) %>
-            <%= erb :'features/partials/feature_row', locals: { feature: feature, feature_name: feature_name, show_team: true } %>
+          <% features.each do |feature| %>
+            <%= erb :'features/partials/feature_row', locals: { feature: feature, show_team: true } %>
           <% end %>
         </tbody>
       </table>

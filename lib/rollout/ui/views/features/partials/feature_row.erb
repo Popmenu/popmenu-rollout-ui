@@ -1,4 +1,4 @@
-<%# locals: feature, feature_name, show_team %>
+<%# locals: feature, show_team %>
 <% has_cache_break = consumer_cache_break?(feature) %>
 <% activate_percentage = get_high_percent_activate(feature) %>
 <% deactivate_percentage = get_low_percent_activate(feature) %>
@@ -6,7 +6,7 @@
 <tr>
   <td>
     <a class="text-blue-600 hover:text-blue-700 font-medium" href="<%= feature_path(feature.name) %>">
-      <%= feature_name %>
+      <%= feature.name %>
     </a>
     <% if !feature.data['description'].to_s.empty? %>
       <div class="text-gray-500 text-xs mt-1"><%= feature.data['description'] %></div>
@@ -42,7 +42,7 @@
   </td>
   <% if has_logging? %>
     <td class="whitespace-nowrap text-gray-500">
-      <%= time_ago(@rollout.logging.updated_at(feature_name)) %>
+      <%= time_ago(rollout.logging.updated_at(feature.name)) %>
     </td>
   <% end %>
   <td class="whitespace-nowrap">
@@ -52,21 +52,21 @@
   </td>
   <td class="whitespace-nowrap text-center">
     <div class="inline-flex items-center justify-center gap-2">
-      <form action="<%= activate_percentage_feature_path(feature_name, activate_percentage) %>" method="POST" class="inline">
+      <form action="<%= activate_percentage_feature_path(feature.name, activate_percentage) %>" method="POST" class="inline">
         <button class="btn-secondary text-xs px-3 py-1.5 w-[4.5rem] text-center" type="submit" onclick="return confirm('<%= confirmation_message(feature, activate_percentage) %>')">
           <%= activate_percentage %>%
         </button>
       </form>
-      <form action="<%= activate_percentage_feature_path(feature_name, deactivate_percentage) %>" method="POST" class="inline">
+      <form action="<%= activate_percentage_feature_path(feature.name, deactivate_percentage) %>" method="POST" class="inline">
         <button class="btn-secondary text-xs px-3 py-1.5 w-[4.5rem] text-center" type="submit" onclick="return confirm('<%= confirmation_message(feature, deactivate_percentage) %>')">
           <%= deactivate_percentage %>%
         </button>
       </form>
-      <form action="<%= delete_feature_path(feature_name) %>" method="POST" class="inline">
+      <form action="<%= delete_feature_path(feature.name) %>" method="POST" class="inline">
         <button class="text-xs px-4 py-2 w-[4.5rem] font-medium 
         text-red-500 border border-red-500 hover:text-red-700 hover:border-red-700 hover:bg-red-50 
         rounded-lg transition-colors flex items-center justify-center gap-1" 
-          type="submit" onclick="return confirm('Are you sure you want to delete <%= feature_name %>?')">
+          type="submit" onclick="return confirm('Are you sure you want to delete <%= feature.name %>?')">
           <span class="text-md"><%= trash_icon %></span>
           Delete
         </button>

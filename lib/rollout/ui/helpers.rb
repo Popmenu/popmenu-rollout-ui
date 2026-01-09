@@ -50,8 +50,29 @@ module Rollout::UI
       Rollout::UI.config
     end
 
+    def rollout
+      @rollout ||= config.get(:instance)
+    end
+
     def has_logging?
-      @rollout.respond_to?(:logging)
+      rollout.respond_to?(:logging)
+    end
+    
+    # @return [Array<Rollout::Feature>]
+    def features
+      @features ||= rollout.features.sort_by(&:downcase).map { |feature| rollout.get(feature) }
+    end
+
+    # @return [Array<String>] sorted list of unique team names
+    def team_names
+      @team_names ||= features.lazy.map { |f| f.data['team'] }.compact.reject(&:empty?).uniq.sort.to_a
+    end
+
+    # @return [Hash<String, Array<Rollout::Feature>>]
+    def features_by_team
+      @features_by_team ||= features.group_by do |feature|
+        feature.data['team'].to_s.strip.empty? ? 'Uncategorized' : feature.data['team']
+      end.sort_by { |team, _| team == 'Uncategorized' ? 'zzz' : team.downcase }
     end
 
     # Returns badge color classes based on feature count
@@ -125,9 +146,8 @@ module Rollout::UI
     end
 
     # Filters features by user and group if those params are provided
-    def filtered_features(rollout, feature_names)
-      feature_names.select do |feature_name|
-        feature = rollout.get(feature_name)
+    def filtered_features
+      features.select do |feature|
         user_match = params[:user].nil? || feature.users.member?(params[:user])
         group_match = params[:group].nil? || feature.groups.member?(params[:group].to_sym)
         user_match && group_match

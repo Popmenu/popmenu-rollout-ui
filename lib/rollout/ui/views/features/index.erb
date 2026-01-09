@@ -5,7 +5,7 @@
   <div class="flex items-center justify-between">
     <div>
       <h2 class="text-xl font-semibold text-gray-800">Features</h2>
-      <p class="text-sm text-gray-500 mt-1"><%= @features.count %> total features</p>
+      <p class="text-sm text-gray-500 mt-1"><%= features.count %> total features</p>
     </div>
     <form action="<%= new_feature_path %>" method="GET">
       <button class="btn-primary" type="submit">
@@ -21,6 +21,6 @@
 
 <%= erb :"features/partials/team_view" %>
 
-<% global_history_events = has_logging? ? @rollout.logging.global_events.reverse : [] %>
+<% global_history_events = has_logging? ? rollout.logging.global_events.reverse : [] %>
 
 <%= erb :"features/partials/event_log", locals: { events: global_history_events, show_feature: true, show_header: true } %>

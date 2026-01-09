@@ -67,11 +67,11 @@
         Groups
         <span class="ml-1 text-gray-400 font-normal">(multi-select)</span>
       </label>
-      <select class="form-input" name="groups[]" id="groups" multiple size="<%= @rollout.groups.count + 1 %>">
+      <select class="form-input" name="groups[]" id="groups" multiple size="<%= rollout.groups.count + 1 %>">
         <option class="py-1 px-1" value="" <%= @feature.groups.count == 0 ? 'selected' : '' %>>
           (none)
         </option>
-        <% @rollout.groups.each do |group| %>
+        <% rollout.groups.each do |group| %>
           <option class="py-1 px-1" value="<%= group %>" <%= @feature.groups.include?(group) ? 'selected' : '' %>>
             <%= group %>
           </option>
@@ -109,7 +109,7 @@
   </div>
   </div>
 
-  <% history_events = has_logging? ? @rollout.logging.events(@feature.name).reverse : [] %>
+  <% history_events = has_logging? ? rollout.logging.events(@feature.name).reverse : [] %>
 
   <%= erb :"features/partials/event_log", locals: { events: history_events } %>
 </div>

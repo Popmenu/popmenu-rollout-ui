@@ -15,12 +15,10 @@ module Rollout::UI
     helpers Helpers
 
     get '/' do
-      @rollout = config.get(:instance)
-      @features = @rollout.features.sort_by(&:downcase)
       if json_request?
         json(
-          filtered_features(@rollout, @features).map do |feature|
-            feature_to_hash(@rollout.get(feature))
+          filtered_features.map do |feature|
+            feature_to_hash(feature)
           end
         )
       else
@@ -29,8 +27,6 @@ module Rollout::UI
     end
 
     get '/features/new' do
-      @rollout = config.get(:instance)
-      @teams = @rollout.features.map { |f| @rollout.get(f).data['team'] }.compact.reject(&:empty?).uniq.sort
       erb :'features/new'
     end
 
@@ -43,7 +39,6 @@ module Rollout::UI
       team = extract_team_from_params
       validate_team!(team, "#{new_feature_path}?name=#{CGI.escape(params[:name].to_s)}")
 
-      rollout = config.get(:instance)
       actor = config.get(:actor, scope: self)
 
       with_rollout_context(rollout, actor: actor) do
@@ -57,9 +52,7 @@ module Rollout::UI
     end
 
     get '/features/:feature_name' do
-      @rollout = config.get(:instance)
-      @feature = @rollout.get(params[:feature_name])
-      @teams = @rollout.features.map { |f| @rollout.get(f).data['team'] }.compact.reject(&:empty?).uniq.sort
+      @feature = rollout.get(params[:feature_name])
 
       if json_request?
         json(feature_to_hash(@feature))
@@ -69,7 +62,6 @@ module Rollout::UI
     end
 
     post '/features/:feature_name' do
-      rollout = config.get(:instance)
       actor = config.get(:actor, scope: self)
       feature_data = rollout.get(params[:feature_name]).data
       if feature_data['updated_at'] && params[:last_updated_at].to_s != feature_data['updated_at'].to_s
@@ -97,7 +89,6 @@ module Rollout::UI
     end
 
     post '/features/:feature_name/activate-percentage' do
-      rollout = config.get(:instance)
       actor = config.get(:actor, scope: self)
       feature_name = params[:feature_name]
       percentage = params[:percentage].to_f.clamp(0.0, 100.0)
@@ -113,9 +104,8 @@ module Rollout::UI
     end
 
     post '/features/:feature_name/delete' do
-      @rollout = config.get(:instance)
       feature_name = params[:feature_name]
-      @rollout.delete(feature_name)
+      rollout.delete(feature_name)
 
       redirect "#{index_path}?success=Feature '#{feature_name}' was successfully deleted"
     end

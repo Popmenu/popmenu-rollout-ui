@@ -73,18 +73,28 @@ RSpec.describe Rollout::UI::Helpers do
     end
   end
 
+  describe '#rollout' do
+    it 'returns the rollout instance from config' do
+      expect(helper.rollout).to eq(ROLLOUT)
+    end
+
+    it 'memoizes the result' do
+      first_call = helper.rollout
+      second_call = helper.rollout
+      
+      expect(first_call).to equal(second_call)
+    end
+  end
+
   describe '#has_logging?' do
     it 'returns true when rollout responds to logging' do
-      rollout = double('rollout', logging: double('logging'))
-      helper.instance_variable_set(:@rollout, rollout)
+      logging_rollout = double('rollout', logging: double('logging'))
+      helper.instance_variable_set(:@rollout, logging_rollout)
       
       expect(helper.has_logging?).to be true
     end
 
     it 'returns false when rollout does not respond to logging' do
-      rollout = ROLLOUT
-      helper.instance_variable_set(:@rollout, rollout)
-      
       expect(helper.has_logging?).to be false
     end
   end
@@ -286,65 +296,123 @@ RSpec.describe Rollout::UI::Helpers do
     end
   end
 
-  describe '#filtered_features' do
-    let(:rollout) { ROLLOUT }
-    
+  describe '#team_names' do
     before do
-      rollout.activate(:filter_test_feature1)
-      rollout.activate_user(:filter_test_feature1, 'user1')
-      rollout.activate_group(:filter_test_feature1, :admins)
+      ROLLOUT.activate(:teams_test_feature1)
+      ROLLOUT.with_feature(:teams_test_feature1) do |feature|
+        feature.data.update(team: 'Engineering')
+      end
       
-      rollout.activate(:filter_test_feature2)
-      rollout.activate_user(:filter_test_feature2, 'user2')
-      rollout.activate_group(:filter_test_feature2, :beta)
+      ROLLOUT.activate(:teams_test_feature2)
+      ROLLOUT.with_feature(:teams_test_feature2) do |feature|
+        feature.data.update(team: 'Platform')
+      end
+      
+      ROLLOUT.activate(:teams_test_feature3)
+      ROLLOUT.with_feature(:teams_test_feature3) do |feature|
+        feature.data.update(team: 'Engineering') # duplicate team
+      end
+      
+      ROLLOUT.activate(:teams_test_feature4)
+      # No team set - should be excluded
+    end
+
+    after do
+      ROLLOUT.delete(:teams_test_feature1)
+      ROLLOUT.delete(:teams_test_feature2)
+      ROLLOUT.delete(:teams_test_feature3)
+      ROLLOUT.delete(:teams_test_feature4)
+    end
+
+    it 'returns unique team names' do
+      result = helper.team_names
+      
+      expect(result).to contain_exactly('Engineering', 'Platform')
+    end
+
+    it 'returns team names sorted alphabetically' do
+      result = helper.team_names
+      
+      expect(result).to eq(['Engineering', 'Platform'])
+    end
+
+    it 'excludes features without teams' do
+      result = helper.team_names
+      
+      expect(result).not_to include(nil)
+      expect(result).not_to include('')
+    end
+
+    it 'excludes empty string teams' do
+      ROLLOUT.with_feature(:teams_test_feature4) do |feature|
+        feature.data.update(team: '')
+      end
+      
+      result = helper.team_names
+      
+      expect(result).not_to include('')
+    end
+
+    it 'memoizes the result' do
+      first_call = helper.team_names
+      second_call = helper.team_names
+      
+      expect(first_call).to equal(second_call)
+    end
+  end
+
+  describe '#filtered_features' do
+    before do
+      ROLLOUT.activate(:filter_test_feature1)
+      ROLLOUT.activate_user(:filter_test_feature1, 'user1')
+      ROLLOUT.activate_group(:filter_test_feature1, :admins)
+      
+      ROLLOUT.activate(:filter_test_feature2)
+      ROLLOUT.activate_user(:filter_test_feature2, 'user2')
+      ROLLOUT.activate_group(:filter_test_feature2, :beta)
     end
     
     after do
-      rollout.delete(:filter_test_feature1)
-      rollout.delete(:filter_test_feature2)
+      ROLLOUT.delete(:filter_test_feature1)
+      ROLLOUT.delete(:filter_test_feature2)
     end
 
     it 'returns all features when no filters applied' do
       helper.params = {}
-      features = ['filter_test_feature1', 'filter_test_feature2']
       
-      result = helper.filtered_features(rollout, features)
+      result = helper.filtered_features
       
-      expect(result).to contain_exactly('filter_test_feature1', 'filter_test_feature2')
+      expect(result.map(&:name)).to contain_exactly(:filter_test_feature1, :filter_test_feature2)
     end
 
     it 'filters by user param' do
       helper.params = { user: 'user1' }
-      features = ['filter_test_feature1', 'filter_test_feature2']
       
-      result = helper.filtered_features(rollout, features)
+      result = helper.filtered_features
       
-      expect(result).to contain_exactly('filter_test_feature1')
+      expect(result.map(&:name)).to contain_exactly(:filter_test_feature1)
     end
 
     it 'filters by group param' do
       helper.params = { group: 'admins' }
-      features = ['filter_test_feature1', 'filter_test_feature2']
       
-      result = helper.filtered_features(rollout, features)
+      result = helper.filtered_features
       
-      expect(result).to contain_exactly('filter_test_feature1')
+      expect(result.map(&:name)).to contain_exactly(:filter_test_feature1)
     end
 
     it 'filters by both user and group' do
       helper.params = { user: 'user1', group: 'admins' }
-      features = ['filter_test_feature1', 'filter_test_feature2']
       
-      result = helper.filtered_features(rollout, features)
+      result = helper.filtered_features
       
-      expect(result).to contain_exactly('filter_test_feature1')
+      expect(result.map(&:name)).to contain_exactly(:filter_test_feature1)
     end
 
     it 'returns empty when no features match' do
       helper.params = { user: 'nonexistent' }
-      features = ['filter_test_feature1', 'filter_test_feature2']
       
-      result = helper.filtered_features(rollout, features)
+      result = helper.filtered_features
       
       expect(result).to be_empty
     end

@@ -1,12 +1,4 @@
 <div id="team-view" class="view-container">
-  <%
-    # Group features by team
-    features_by_team = @features.group_by do |feature_name|
-      feature = @rollout.get(feature_name)
-      feature.data['team'].to_s.strip.empty? ? 'Uncategorized' : feature.data['team']
-    end.sort_by { |team, _| team == 'Uncategorized' ? 'zzz' : team.downcase }
-  %>
-
   <div class="space-y-4">
     <% features_by_team.each do |(team_name, team_features)| %>
       <%= erb :'features/partials/team_accordion', locals: { team_name: team_name, team_features: team_features } %>
