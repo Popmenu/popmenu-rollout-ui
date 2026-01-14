@@ -31,6 +31,8 @@ module Rollout::UI
     end
 
     post '/features/new' do
+      halt 400, 'Invalid feature name format' unless params[:name].is_a?(String)
+
       # Validate required fields
       if params[:name].to_s.strip.empty?
         redirect "#{new_feature_path}?error=#{CGI.escape('Feature name is required')}&team=#{CGI.escape(params[:team].to_s)}"

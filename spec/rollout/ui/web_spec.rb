@@ -537,6 +537,31 @@ RSpec.describe 'Web UI' do
     end
   end
 
+  describe 'parameter validation security' do
+    describe 'POST /features/new' do
+      it "blocks hash parameters with 400 error" do
+        post '/features/new', 'name[nest][nested]' => 'value', 'name[another]' => 'data', team: 'TestTeam'
+
+        expect(last_response.status).to eq 400
+        expect(last_response.body).to include('Invalid feature name format')
+      end
+
+      it "blocks array parameters with 400 error" do
+        post '/features/new', 'name[]' => ['item1', 'item2'], team: 'TestTeam'
+
+        expect(last_response.status).to eq 400
+        expect(last_response.body).to include('Invalid feature name format')
+      end
+
+      it "still allows valid string parameters" do
+        post '/features/new', name: 'valid_feature_name', team: 'TestTeam'
+
+        expect(last_response).to be_redirect
+        expect(last_response.location).to include('/features/valid_feature_name')
+      end
+    end
+  end
+
   describe 'edge cases' do
     it "handles feature names with special characters" do
       post '/features/new', name: 'feature_with_numbers_123', team: 'Engineering'
