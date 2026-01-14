@@ -67,7 +67,10 @@ module Rollout::UI
 
     # @return [Array<String>] sorted list of unique team names
     def team_names
-      @team_names ||= features.lazy.map { |f| f.data['team'] }.compact.reject(&:empty?).uniq.sort.to_a
+      @team_names ||= features.filter_map do |feature|
+        team = feature.data['team'].to_s
+        team unless team.empty?
+      end.uniq.sort
     end
 
     # @return [Hash<String, Array<Rollout::Feature>>]
