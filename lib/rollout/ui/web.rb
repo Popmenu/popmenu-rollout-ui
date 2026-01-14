@@ -45,8 +45,7 @@ module Rollout::UI
 
       with_rollout_context(rollout, actor: actor) do
         rollout.with_feature(params[:name]) do |feature|
-          feature.data.update(team: team)
-          feature.data.update(updated_at: Time.now.to_i)
+          feature.data.update(team: team, updated_at: Time.now.to_i)
         end
       end
 
@@ -80,10 +79,12 @@ module Rollout::UI
           if params[:users]
             feature.users = params[:users].split(',').map(&:strip).uniq.sort
           end
-          feature.data.update(description: params[:description])
-          feature.data.update(team: team)
-          feature.data.update(consumer_cache_break: params[:consumer_cache_break])
-          feature.data.update(updated_at: Time.now.to_i)
+          feature.data.update(
+            description: params[:description],
+            team: team,
+            consumer_cache_break: params[:consumer_cache_break],
+            updated_at: Time.now.to_i
+          )
         end
       end
 
