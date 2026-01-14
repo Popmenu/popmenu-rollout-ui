@@ -1,5 +1,7 @@
 require "sinatra"
 require "rollout"
+require "erb"
+require "cgi"
 
 require "rollout/ui/version"
 
@@ -18,15 +20,15 @@ module Rollout::UI
     end
 
     def feature_path(feature_name)
-      "#{request.script_name}/features/#{feature_name}"
+      "#{request.script_name}/features/#{ERB::Util.url_encode(feature_name.to_s)}"
     end
 
     def delete_feature_path(feature_name)
-      "#{request.script_name}/features/#{feature_name}/delete"
+      "#{request.script_name}/features/#{ERB::Util.url_encode(feature_name.to_s)}/delete"
     end
 
     def activate_percentage_feature_path(feature_name, percentage)
-      "#{request.script_name}/features/#{feature_name}/activate-percentage?percentage=#{percentage.to_f}"
+      "#{request.script_name}/features/#{ERB::Util.url_encode(feature_name.to_s)}/activate-percentage?percentage=#{percentage.to_f}"
     end
 
     def current_user
@@ -135,11 +137,11 @@ module Rollout::UI
     # Returns the validated team if valid, otherwise redirects
     def validate_team!(team, error_redirect_path)
       if team.empty?
-        redirect "#{error_redirect_path}?error=Team is required"
+        redirect "#{error_redirect_path}?error=#{CGI.escape('Team is required')}"
       end
 
       if team.length < 2
-        redirect "#{error_redirect_path}?error=Team name must be at least 2 characters"
+        redirect "#{error_redirect_path}?error=#{CGI.escape('Team name must be at least 2 characters')}"
       end
 
       team

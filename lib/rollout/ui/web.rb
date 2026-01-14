@@ -33,7 +33,7 @@ module Rollout::UI
     post '/features/new' do
       # Validate required fields
       if params[:name].to_s.strip.empty?
-        redirect "#{new_feature_path}?error=Feature name is required&team=#{CGI.escape(params[:team].to_s)}"
+        redirect "#{new_feature_path}?error=#{CGI.escape('Feature name is required')}&team=#{CGI.escape(params[:team].to_s)}"
       end
 
       team = extract_team_from_params
@@ -65,7 +65,7 @@ module Rollout::UI
       actor = config.get(:actor, scope: self)
       feature_data = rollout.get(params[:feature_name]).data
       if feature_data['updated_at'] && params[:last_updated_at].to_s != feature_data['updated_at'].to_s
-        redirect "#{feature_path(params[:feature_name])}?error=Rollout version outdated. Review changes below and try again."
+        redirect "#{feature_path(params[:feature_name])}?error=#{CGI.escape('Rollout version outdated. Review changes below and try again.')}"
       end
 
       team = extract_team_from_params
@@ -85,7 +85,7 @@ module Rollout::UI
         end
       end
 
-      redirect "#{feature_path(params[:feature_name])}?success=Feature updated successfully"
+      redirect "#{feature_path(params[:feature_name])}?success=#{CGI.escape('Feature updated successfully')}"
     end
 
     post '/features/:feature_name/activate-percentage' do
@@ -107,7 +107,7 @@ module Rollout::UI
       feature_name = params[:feature_name]
       rollout.delete(feature_name)
 
-      redirect "#{index_path}?success=Feature '#{feature_name}' was successfully deleted"
+      redirect "#{index_path}?success=#{CGI.escape("Feature '#{feature_name}' was successfully deleted")}"
     end
   end
 end

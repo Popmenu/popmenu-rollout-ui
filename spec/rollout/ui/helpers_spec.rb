@@ -48,11 +48,22 @@ RSpec.describe Rollout::UI::Helpers do
       it 'returns the feature path for a given feature name' do
         expect(helper.feature_path('my_feature')).to eq('/rollout/features/my_feature')
       end
+
+      it 'URL-encodes feature names with special characters' do
+        expect(helper.feature_path('feature with spaces')).to eq('/rollout/features/feature%20with%20spaces')
+        expect(helper.feature_path('feature/with/slashes')).to eq('/rollout/features/feature%2Fwith%2Fslashes')
+        expect(helper.feature_path('feature&special')).to eq('/rollout/features/feature%26special')
+      end
     end
 
     describe '#delete_feature_path' do
       it 'returns the delete feature path for a given feature name' do
         expect(helper.delete_feature_path('my_feature')).to eq('/rollout/features/my_feature/delete')
+      end
+
+      it 'URL-encodes feature names with special characters' do
+        expect(helper.delete_feature_path('feature with spaces')).to eq('/rollout/features/feature%20with%20spaces/delete')
+        expect(helper.delete_feature_path('feature&special')).to eq('/rollout/features/feature%26special/delete')
       end
     end
 
@@ -63,6 +74,11 @@ RSpec.describe Rollout::UI::Helpers do
 
       it 'converts percentage to float' do
         expect(helper.activate_percentage_feature_path('my_feature', '75')).to eq('/rollout/features/my_feature/activate-percentage?percentage=75.0')
+      end
+
+      it 'URL-encodes feature names with special characters' do
+        expect(helper.activate_percentage_feature_path('feature with spaces', 50)).to eq('/rollout/features/feature%20with%20spaces/activate-percentage?percentage=50.0')
+        expect(helper.activate_percentage_feature_path('feature&special', 50)).to eq('/rollout/features/feature%26special/activate-percentage?percentage=50.0')
       end
     end
   end
@@ -277,14 +293,14 @@ RSpec.describe Rollout::UI::Helpers do
   describe '#validate_team!' do
     it 'redirects with error when team is empty' do
       result = catch(:redirect) { helper.validate_team!('', '/features/test') }
-      
-      expect(result).to eq('/features/test?error=Team is required')
+
+      expect(result).to eq('/features/test?error=Team+is+required')
     end
 
     it 'redirects with error when team is less than 2 characters' do
       result = catch(:redirect) { helper.validate_team!('A', '/features/test') }
-      
-      expect(result).to eq('/features/test?error=Team name must be at least 2 characters')
+
+      expect(result).to eq('/features/test?error=Team+name+must+be+at+least+2+characters')
     end
 
     it 'returns the team when valid' do
@@ -293,6 +309,12 @@ RSpec.describe Rollout::UI::Helpers do
 
     it 'accepts team with exactly 2 characters' do
       expect(helper.validate_team!('AB', '/features/test')).to eq('AB')
+    end
+
+    it 'properly encodes error messages' do
+      result = catch(:redirect) { helper.validate_team!('', '/features/test') }
+      expect(result).not_to include('error=Team is required')
+      expect(result).to include('error=Team+is+required')
     end
   end
 

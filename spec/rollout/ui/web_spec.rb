@@ -209,7 +209,7 @@ RSpec.describe 'Web UI' do
       post '/features/new', name: '', team: 'Engineering'
 
       expect(last_response).to be_redirect
-      expect(last_response.location).to include('error=Feature name is required')
+      expect(last_response.location).to include('error=Feature+name+is+required')
     end
 
     it "preserves team when name is missing" do
@@ -222,7 +222,7 @@ RSpec.describe 'Web UI' do
       post '/features/new', name: 'test_feature', team: ''
 
       expect(last_response).to be_redirect
-      expect(last_response.location).to include('error=Team is required')
+      expect(last_response.location).to include('error=Team+is+required')
     end
 
     it "preserves feature name when team is missing" do
@@ -235,7 +235,7 @@ RSpec.describe 'Web UI' do
       post '/features/new', name: 'test_feature', team: 'A'
 
       expect(last_response).to be_redirect
-      expect(last_response.location).to include('error=Team name must be at least 2 characters')
+      expect(last_response.location).to include('error=Team+name+must+be+at+least+2+characters')
     end
 
     it "creates feature with valid team name" do
@@ -288,14 +288,14 @@ RSpec.describe 'Web UI' do
       post '/features/edit_test_feature', team: '', percentage: '50', last_updated_at: updated_at.to_s
 
       expect(last_response).to be_redirect
-      expect(last_response.location).to include('error=Team is required')
+      expect(last_response.location).to include('error=Team+is+required')
     end
 
     it "requires team name to be at least 2 characters" do
       post '/features/edit_test_feature', team: 'A', percentage: '50', last_updated_at: updated_at.to_s
 
       expect(last_response).to be_redirect
-      expect(last_response.location).to include('error=Team name must be at least 2 characters')
+      expect(last_response.location).to include('error=Team+name+must+be+at+least+2+characters')
     end
 
     it "updates feature with valid team name" do
@@ -392,17 +392,17 @@ RSpec.describe 'Web UI' do
     it "shows success message on successful update" do
       post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', last_updated_at: updated_at.to_s
 
-      expect(last_response.location).to include('success=Feature updated successfully')
+      expect(last_response.location).to include('success=Feature+updated+successfully')
     end
 
     describe 'optimistic locking' do
       it "rejects update when last_updated_at does not match" do
         old_timestamp = Time.now.to_i - 1000
-        
+
         post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', last_updated_at: old_timestamp.to_s
 
         expect(last_response).to be_redirect
-        expect(last_response.location).to include('error=Rollout version outdated')
+        expect(last_response.location).to include('error=Rollout+version+outdated')
       end
 
       it "allows update when last_updated_at matches" do
