@@ -1,0 +1,36 @@
+<%# locals: team_name, team_features %>
+<%
+  total_features = team_features.length
+  fully_activated = team_features.count { |feature| feature.percentage == 100 }
+%>
+<div class="accordion-item" data-team="<%= team_name %>">
+  <button 
+    type="button" 
+    class="accordion-header w-full flex items-center justify-between p-5 bg-white hover:bg-gray-50 transition-all duration-200 cursor-pointer rounded-lg"
+    onclick="toggleAccordion(this)"
+    aria-expanded="false"
+  >
+    <div class="flex items-center gap-3">
+      <span class="accordion-icon text-gray-800 transition-transform duration-300 transform">
+        <%= chevron_right_icon %>
+      </span>
+      <span class="font-semibold text-gray-800"><%= team_name %></span>
+      <span class="text-xs px-2.5 py-1 rounded-full font-medium <%= feature_count_badge_classes(total_features) %>"><%= total_features %> features</span>
+      <span class="text-xs px-2.5 py-1 bg-blue-100 rounded-full text-blue-600 font-medium"><%= fully_activated %>/<%= total_features %> fully activated</span>
+    </div>
+  </button>
+  
+  <div class="accordion-content" style="max-height: 0; transition: max-height 0.2s ease-out;">
+    <div class="border-t border-gray-400">
+      <table class="data-table">
+        <%= erb :"features/partials/table_header", locals: { show_team: false, row_class: 'bg-gray-50' } %>
+
+        <tbody class="overflow-clip rounded-b-lg">
+          <% team_features.each do |feature| %>
+            <%= erb :'features/partials/feature_row', locals: { feature: feature, show_team: false } %>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

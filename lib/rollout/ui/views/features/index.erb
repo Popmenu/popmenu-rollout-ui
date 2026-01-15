@@ -1,0 +1,26 @@
+<%= erb :"features/partials/flash_messages" %>
+
+<!-- Header Card -->
+<div class="card p-6 mb-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-xl font-semibold text-gray-800">Features</h2>
+      <p class="text-sm text-gray-500 mt-1"><%= features.count %> total features</p>
+    </div>
+    <form action="<%= new_feature_path %>" method="GET">
+      <button class="btn-primary" type="submit">
+        + Add New Feature
+      </button>
+    </form>
+  </div>
+</div>
+
+<%= erb :"features/partials/view_toggle" %>
+
+<%= erb :"features/partials/list_view" %>
+
+<%= erb :"features/partials/team_view" %>
+
+<% global_history_events = has_logging? ? rollout.logging.global_events.reverse : [] %>
+
+<%= erb :"features/partials/event_log", locals: { events: global_history_events, show_feature: true, show_header: true } %>

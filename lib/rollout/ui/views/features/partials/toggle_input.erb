@@ -1,0 +1,23 @@
+<%# locals: name, label, checked, tooltip %>
+<% checked ||= false %>
+<% tooltip ||= nil %>
+
+<div class="mb-6 flex items-center gap-3">
+  <input name="<%= name %>" value="false" type="hidden">
+  <label class="toggle-switch" for="<%= name %>">
+    <input 
+      name="<%= name %>" 
+      id="<%= name %>" 
+      value="true" 
+      type="checkbox" 
+      <%= checked ? 'checked' : '' %>
+    >
+    <span class="toggle-slider"></span>
+  </label>
+  <div class="flex items-center gap-2">
+    <label class="text-sm font-medium text-gray-700"><%= label %></label>
+    <% if tooltip %>
+      <%= erb :"features/partials/#{tooltip}" %>
+    <% end %>
+  </div>
+</div>

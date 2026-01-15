@@ -1,0 +1,16 @@
+<% if params[:success] %>
+  <div class="flash-message mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm flex items-center justify-between">
+    <span><%= params[:success] %></span>
+    <button type="button" onclick="dismissFlash(this)" class="text-emerald-500 hover:text-emerald-700">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4L12 12M12 4L4 12" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+<% end %>
+
+<% if params[:error] %>
+  <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+    <%= params[:error] %>
+  </div>
+<% end %>

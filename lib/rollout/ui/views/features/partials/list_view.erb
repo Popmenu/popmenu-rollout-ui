@@ -1,0 +1,13 @@
+<div id="list-view" class="view-container hidden">
+  <div class="card">
+    <table class="data-table">
+      <%= erb :"features/partials/table_header", locals: { show_team: true } %>
+
+      <tbody>
+        <% features.each do |feature| %>
+          <%= erb :'features/partials/feature_row', locals: { feature: feature, show_team: true } %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
