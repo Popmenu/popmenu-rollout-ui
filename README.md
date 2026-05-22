@@ -88,6 +88,40 @@ Rollout::UI.configure do
 end
 ```
 
+## Environment label
+
+To make it obvious which environment the UI is pointing at, configure an
+`environment_label`. When set, the page title and header become `Rollout - <label>`;
+when unset, the UI falls back to its default `Rollout UI` title and `Rollout` header.
+
+```ruby
+Rollout::UI.configure do
+  instance { $rollout }
+  environment_label { Rails.env.titleize }
+end
+```
+
+## Active users export
+
+To let operators kick off a custom "who is active for this flag right now?" export
+from the feature detail page, configure `active_users_exporter`. The block is
+invoked with the feature name and the current user. Optionally customize the
+button label with `active_users_export_label`.
+
+```ruby
+Rollout::UI.configure do
+  instance { $rollout }
+  active_users_exporter do |feature_name, current_user|
+    MyExportJob.perform_later(feature_name: feature_name, user_id: current_user.id)
+  end
+  active_users_export_label { "Export Active Restaurants" }
+end
+```
+
+When no exporter is configured the button is hidden and the corresponding POST
+route returns 404. The gem itself does not generate the export — it just signals
+that one was requested.
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/fetlife/rollout-ui.

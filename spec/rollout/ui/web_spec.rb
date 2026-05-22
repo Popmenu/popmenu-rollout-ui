@@ -513,6 +513,120 @@ RSpec.describe 'Web UI' do
     end
   end
 
+  describe 'environment label in layout' do
+    after do
+      Rollout::UI.config.reset!(:environment_label)
+    end
+
+    it "renders default title and header when no environment_label is configured" do
+      get '/'
+
+      expect(last_response).to be_ok
+      expect(last_response.body).to include('<title>Rollout UI</title>')
+      expect(last_response.body).to match(/<a[^>]*>Rollout UI<\/a>/)
+      expect(last_response.body).not_to include('Rollout - ')
+    end
+
+    it "renders environment label in title and header when configured" do
+      Rollout::UI.configure do
+        environment_label { 'Production' }
+      end
+
+      get '/'
+
+      expect(last_response).to be_ok
+      expect(last_response.body).to include('<title>Rollout - Production</title>')
+      expect(last_response.body).to match(/<a[^>]*>Rollout - Production<\/a>/)
+    end
+  end
+
+  describe 'active users export' do
+    before do
+      ROLLOUT.activate(:export_test_feature)
+      ROLLOUT.with_feature(:export_test_feature) do |feature|
+        feature.data.update(team: 'TestTeam')
+      end
+    end
+
+    after do
+      Rollout::UI.config.reset!(:active_users_exporter)
+      Rollout::UI.config.reset!(:active_users_export_label)
+    end
+
+    context 'when no exporter is configured' do
+      it "does not render the export button on the show page" do
+        get '/features/export_test_feature'
+
+        expect(last_response).to be_ok
+        expect(last_response.body).not_to include('active-users-export')
+      end
+
+      it "returns 404 for the export route" do
+        post '/features/export_test_feature/active-users-export'
+
+        expect(last_response.status).to eq 404
+      end
+    end
+
+    context 'when an exporter is configured' do
+      it "renders the export button on the show page with the default label" do
+        Rollout::UI.configure do
+          active_users_exporter { |_feature_name, _current_user| }
+        end
+
+        get '/features/export_test_feature'
+
+        expect(last_response).to be_ok
+        expect(last_response.body).to include('/features/export_test_feature/active-users-export')
+        expect(last_response.body).to include('Export Active Users')
+      end
+
+      it "renders the configured export label" do
+        Rollout::UI.configure do
+          active_users_exporter { |_feature_name, _current_user| }
+          active_users_export_label { 'Export Active Restaurants' }
+        end
+
+        get '/features/export_test_feature'
+
+        expect(last_response.body).to include('Export Active Restaurants')
+      end
+
+      it "calls the exporter with the feature name and current user and redirects with success" do
+        captured = {}
+        Rollout::UI.configure do
+          active_users_exporter do |feature_name, current_user|
+            captured[:feature_name] = feature_name
+            captured[:current_user] = current_user
+          end
+        end
+
+        post '/features/export_test_feature/active-users-export'
+
+        expect(captured[:feature_name]).to eq('export_test_feature')
+        expect(captured).to have_key(:current_user)
+        expect(last_response).to be_redirect
+        expect(last_response.location).to include('/features/export_test_feature')
+        expect(last_response.location).to include('success=')
+        expect(last_response.location).to include('export_test_feature')
+      end
+
+      it "URL-encodes feature names with special characters in the button action" do
+        Rollout::UI.configure do
+          active_users_exporter { |_feature_name, _current_user| }
+        end
+        ROLLOUT.activate(:'feature with spaces')
+        ROLLOUT.with_feature(:'feature with spaces') do |feature|
+          feature.data.update(team: 'TestTeam')
+        end
+
+        get '/features/feature%20with%20spaces'
+
+        expect(last_response.body).to include('/features/feature%20with%20spaces/active-users-export')
+      end
+    end
+  end
+
   describe 'static assets' do
     it "serves CSS files" do
       get '/css/tailwind.min.css'

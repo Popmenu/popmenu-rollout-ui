@@ -106,6 +106,15 @@ module Rollout::UI
       redirect "#{index_path}?success=#{CGI.escape("'#{feature_name}' updated to #{percentage}%")}"
     end
 
+    post '/features/:feature_name/active-users-export' do
+      halt 404 unless config.defined?(:active_users_exporter)
+
+      feature_name = params[:feature_name]
+      config.get(:active_users_exporter, feature_name, current_user)
+
+      redirect "#{feature_path(feature_name)}?success=#{CGI.escape("Export started for '#{feature_name}'. You will receive an email when it is ready.")}"
+    end
+
     post '/features/:feature_name/delete' do
       feature_name = params[:feature_name]
       rollout.delete(feature_name)

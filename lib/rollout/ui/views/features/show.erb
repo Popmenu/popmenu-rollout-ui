@@ -103,9 +103,18 @@
         Delete Feature
       </button>
     </form>
-    <button class="btn-primary" type="submit" form="updateFormSubmit">
-      Update Feature
-    </button>
+    <div class="flex items-center gap-3">
+      <% if active_users_exporter_configured? %>
+        <form action="<%= active_users_export_feature_path(@feature.name) %>" method="POST">
+          <button class="btn-secondary" type="submit">
+            <%= active_users_export_label %>
+          </button>
+        </form>
+      <% end %>
+      <button class="btn-primary" type="submit" form="updateFormSubmit">
+        Update Feature
+      </button>
+    </div>
   </div>
   </div>
 

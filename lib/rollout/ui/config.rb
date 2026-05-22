@@ -9,6 +9,10 @@ module Rollout::UI
       instance
       actor
       actor_url
+      active_users_exporter
+      active_users_export_label
+      environment_label
+      current_user_resolver
     ].freeze
 
     KEYS.each do |key|
@@ -40,6 +44,12 @@ module Rollout::UI
 
     def defined?(key)
       !@blocks.nil? && @blocks.key?(key)
+    end
+
+    def reset!(key)
+      return if @blocks.nil?
+
+      @blocks.delete(key)
     end
   end
 end
