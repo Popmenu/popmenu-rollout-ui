@@ -31,9 +31,42 @@ module Rollout::UI
       "#{request.script_name}/features/#{ERB::Util.url_encode(feature_name.to_s)}/activate-percentage?percentage=#{percentage.to_f}"
     end
 
+    def active_users_export_feature_path(feature_name)
+      "#{request.script_name}/features/#{ERB::Util.url_encode(feature_name.to_s)}/active-users-export"
+    end
+
+    def environment_label
+      config.get(:environment_label, scope: self) if config.defined?(:environment_label)
+    end
+
+    def page_title
+      label = environment_label
+      label.to_s.strip.empty? ? "Rollout UI" : "Rollout - #{label}"
+    end
+
+    def production_environment?
+      environment_label.to_s.downcase.include?('prod')
+    end
+
+    def tab_title
+      production_environment? ? "🔴 #{page_title}" : page_title
+    end
+
+    def active_users_exporter_configured?
+      config.defined?(:active_users_exporter)
+    end
+
+    def active_users_export_label
+      label = config.get(:active_users_export_label, scope: self) if config.defined?(:active_users_export_label)
+      label.to_s.strip.empty? ? "Export Active Users" : label
+    end
+
     def current_user
-      @current_user ||= begin
-        id = request.session["warden.user.user.key"].try(:[], 0).try(:[], 0)
+      @current_user ||= if config.defined?(:current_user_resolver)
+        config.get(:current_user_resolver, request)
+      else
+        session = request.env['rack.session']
+        id = session && session["warden.user.user.key"].try(:[], 0).try(:[], 0)
         User.find_by(id: id) unless id.nil?
       end
     end

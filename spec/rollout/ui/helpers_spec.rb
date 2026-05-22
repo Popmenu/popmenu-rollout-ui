@@ -81,6 +81,136 @@ RSpec.describe Rollout::UI::Helpers do
         expect(helper.activate_percentage_feature_path('feature&special', 50)).to eq('/rollout/features/feature%26special/activate-percentage?percentage=50.0')
       end
     end
+
+    describe '#active_users_export_feature_path' do
+      it 'returns the export path for a given feature name' do
+        expect(helper.active_users_export_feature_path('my_feature')).to eq('/rollout/features/my_feature/active-users-export')
+      end
+
+      it 'URL-encodes feature names with special characters' do
+        expect(helper.active_users_export_feature_path('feature with spaces')).to eq('/rollout/features/feature%20with%20spaces/active-users-export')
+      end
+    end
+  end
+
+  describe 'environment label helpers' do
+    after do
+      Rollout::UI.config.reset!(:environment_label)
+    end
+
+    describe '#environment_label' do
+      it 'returns nil when not configured' do
+        expect(helper.environment_label).to be_nil
+      end
+
+      it 'returns the configured value' do
+        Rollout::UI.configure { environment_label { 'Production' } }
+
+        expect(helper.environment_label).to eq('Production')
+      end
+    end
+
+    describe '#page_title' do
+      it 'returns "Rollout UI" when no environment_label is configured' do
+        expect(helper.page_title).to eq('Rollout UI')
+      end
+
+      it 'returns "Rollout - <ENV>" when environment_label is configured' do
+        Rollout::UI.configure { environment_label { 'Staging' } }
+
+        expect(helper.page_title).to eq('Rollout - Staging')
+      end
+
+      it 'falls back to default when environment_label is blank' do
+        Rollout::UI.configure { environment_label { '' } }
+
+        expect(helper.page_title).to eq('Rollout UI')
+      end
+    end
+
+    describe '#production_environment?' do
+      it 'returns false when no environment_label is configured' do
+        expect(helper.production_environment?).to be false
+      end
+
+      it 'returns false for non-production labels' do
+        Rollout::UI.configure { environment_label { 'Staging' } }
+        expect(helper.production_environment?).to be false
+      end
+
+      it 'returns true for "Production"' do
+        Rollout::UI.configure { environment_label { 'Production' } }
+        expect(helper.production_environment?).to be true
+      end
+
+      it 'returns true for "prod" (case-insensitive short form)' do
+        Rollout::UI.configure { environment_label { 'prod' } }
+        expect(helper.production_environment?).to be true
+      end
+
+      it 'returns true for "PROD"' do
+        Rollout::UI.configure { environment_label { 'PROD' } }
+        expect(helper.production_environment?).to be true
+      end
+
+      it 'returns true for prod-like labels such as "preprod"' do
+        Rollout::UI.configure { environment_label { 'preprod' } }
+        expect(helper.production_environment?).to be true
+      end
+    end
+
+    describe '#tab_title' do
+      it 'matches page_title when not in production' do
+        Rollout::UI.configure { environment_label { 'Staging' } }
+        expect(helper.tab_title).to eq('Rollout - Staging')
+      end
+
+      it 'prepends a red circle emoji when in production' do
+        Rollout::UI.configure { environment_label { 'Production' } }
+        expect(helper.tab_title).to eq('🔴 Rollout - Production')
+      end
+
+      it 'matches page_title with no environment_label configured' do
+        expect(helper.tab_title).to eq('Rollout UI')
+      end
+    end
+  end
+
+  describe 'active users export helpers' do
+    after do
+      Rollout::UI.config.reset!(:active_users_exporter)
+      Rollout::UI.config.reset!(:active_users_export_label)
+    end
+
+    describe '#active_users_exporter_configured?' do
+      it 'returns false when no exporter is configured' do
+        expect(helper.active_users_exporter_configured?).to be false
+      end
+
+      it 'returns true when an exporter is configured' do
+        Rollout::UI.configure { active_users_exporter { |_, _| } }
+
+        expect(helper.active_users_exporter_configured?).to be true
+      end
+    end
+
+    describe '#active_users_export_label' do
+      it 'returns the default label when not configured' do
+        expect(helper.active_users_export_label).to eq('Export Active Users')
+      end
+
+      it 'returns the configured label' do
+        Rollout::UI.configure { active_users_export_label { 'Export Restaurants' } }
+
+        expect(helper.active_users_export_label).to eq('Export Restaurants')
+      end
+
+      it 'falls back to the default when configured label is blank' do
+        Rollout::UI.configure { active_users_export_label { '' } }
+
+        expect(helper.active_users_export_label).to eq('Export Active Users')
+      end
+    end
   end
 
   describe '#config' do
