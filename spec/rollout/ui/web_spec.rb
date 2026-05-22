@@ -529,14 +529,38 @@ RSpec.describe 'Web UI' do
 
     it "renders environment label in title and header when configured" do
       Rollout::UI.configure do
+        environment_label { 'Staging' }
+      end
+
+      get '/'
+
+      expect(last_response).to be_ok
+      expect(last_response.body).to include('<title>Rollout - Staging</title>')
+      expect(last_response.body).to match(/<a[^>]*>Rollout - Staging<\/a>/)
+      expect(last_response.body).not_to include('text-red-600')
+    end
+
+    it "renders production environments in red with a danger emoji in the tab" do
+      Rollout::UI.configure do
         environment_label { 'Production' }
       end
 
       get '/'
 
       expect(last_response).to be_ok
-      expect(last_response.body).to include('<title>Rollout - Production</title>')
-      expect(last_response.body).to match(/<a[^>]*>Rollout - Production<\/a>/)
+      expect(last_response.body).to include('<title>🔴 Rollout - Production</title>')
+      expect(last_response.body).to include('text-red-600')
+    end
+
+    it "treats any label containing 'prod' as production (case-insensitive)" do
+      Rollout::UI.configure do
+        environment_label { 'preprod' }
+      end
+
+      get '/'
+
+      expect(last_response.body).to include('<title>🔴 Rollout - preprod</title>')
+      expect(last_response.body).to include('text-red-600')
     end
   end
 

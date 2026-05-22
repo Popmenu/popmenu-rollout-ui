@@ -127,6 +127,53 @@ RSpec.describe Rollout::UI::Helpers do
         expect(helper.page_title).to eq('Rollout UI')
       end
     end
+
+    describe '#production_environment?' do
+      it 'returns false when no environment_label is configured' do
+        expect(helper.production_environment?).to be false
+      end
+
+      it 'returns false for non-production labels' do
+        Rollout::UI.configure { environment_label { 'Staging' } }
+        expect(helper.production_environment?).to be false
+      end
+
+      it 'returns true for "Production"' do
+        Rollout::UI.configure { environment_label { 'Production' } }
+        expect(helper.production_environment?).to be true
+      end
+
+      it 'returns true for "prod" (case-insensitive short form)' do
+        Rollout::UI.configure { environment_label { 'prod' } }
+        expect(helper.production_environment?).to be true
+      end
+
+      it 'returns true for "PROD"' do
+        Rollout::UI.configure { environment_label { 'PROD' } }
+        expect(helper.production_environment?).to be true
+      end
+
+      it 'returns true for prod-like labels such as "preprod"' do
+        Rollout::UI.configure { environment_label { 'preprod' } }
+        expect(helper.production_environment?).to be true
+      end
+    end
+
+    describe '#tab_title' do
+      it 'matches page_title when not in production' do
+        Rollout::UI.configure { environment_label { 'Staging' } }
+        expect(helper.tab_title).to eq('Rollout - Staging')
+      end
+
+      it 'prepends a red circle emoji when in production' do
+        Rollout::UI.configure { environment_label { 'Production' } }
+        expect(helper.tab_title).to eq('🔴 Rollout - Production')
+      end
+
+      it 'matches page_title with no environment_label configured' do
+        expect(helper.tab_title).to eq('Rollout UI')
+      end
+    end
   end
 
   describe 'active users export helpers' do

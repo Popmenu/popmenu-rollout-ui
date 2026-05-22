@@ -44,6 +44,14 @@ module Rollout::UI
       label.to_s.strip.empty? ? "Rollout UI" : "Rollout - #{label}"
     end
 
+    def production_environment?
+      environment_label.to_s.downcase.include?('prod')
+    end
+
+    def tab_title
+      production_environment? ? "🔴 #{page_title}" : page_title
+    end
+
     def active_users_exporter_configured?
       config.defined?(:active_users_exporter)
     end
