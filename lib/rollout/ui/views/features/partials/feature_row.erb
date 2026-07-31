@@ -8,6 +8,9 @@
     <a class="text-blue-600 hover:text-blue-700 font-medium" href="<%= feature_path(feature.name) %>">
       <%= feature.name %>
     </a>
+    <% if permanent?(feature) %>
+      <span class="ml-2 text-xs px-2.5 py-1 rounded-full font-medium bg-teal-100 text-teal-700">Permanent</span>
+    <% end %>
     <% if !feature.data['description'].to_s.empty? %>
       <div class="text-gray-500 text-xs mt-1"><%= feature.data['description'] %></div>
     <% end %>

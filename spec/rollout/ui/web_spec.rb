@@ -101,6 +101,109 @@ RSpec.describe 'Web UI' do
     end
   end
 
+  describe 'permanent flag rendering' do
+    # The accordion header for a single team, from its data-team attribute to the
+    # end of the header button.
+    def team_header(team_name)
+      last_response.body[/data-team="#{team_name}".*?<\/button>/m]
+    end
+
+    # index.erb renders list view and team view into the same page, so split on
+    # the team view container to assert against each view separately.
+    def views
+      last_response.body.split('id="team-view"')
+    end
+
+    def badge_count(html)
+      html.scan('>Permanent</span>').length
+    end
+
+    def create_feature(name, team:, percentage:, permanent: false)
+      ROLLOUT.activate_percentage(name, percentage)
+      ROLLOUT.with_feature(name) do |feature|
+        feature.data.update(team: team, permanent: permanent ? 'true' : 'false')
+      end
+    end
+
+    describe 'name badge' do
+      before do
+        create_feature(:badge_permanent_feature, team: 'BadgeTeam', percentage: 100, permanent: true)
+        create_feature(:badge_normal_feature, team: 'BadgeTeam', percentage: 100)
+      end
+
+      it "shows the badge in team view for permanent flags only" do
+        get '/'
+
+        _list_html, team_html = views
+        expect(badge_count(team_html)).to eq 1
+      end
+
+      it "shows the badge in list view for permanent flags only" do
+        get '/'
+
+        list_html, _team_html = views
+        expect(badge_count(list_html)).to eq 1
+      end
+
+      it "shows no badge when no flags are permanent" do
+        ROLLOUT.delete(:badge_permanent_feature)
+
+        get '/'
+
+        expect(badge_count(last_response.body)).to eq 0
+      end
+    end
+
+    describe 'team header metrics' do
+      it "excludes permanent flags from the feature count and fully activated ratio" do
+        create_feature(:mixed_permanent_feature, team: 'MixedTeam', percentage: 100, permanent: true)
+        create_feature(:mixed_full_feature, team: 'MixedTeam', percentage: 100)
+        create_feature(:mixed_partial_feature, team: 'MixedTeam', percentage: 50)
+
+        get '/'
+
+        header = team_header('MixedTeam')
+        expect(header).to include('1 permanent')
+        expect(header).to include('2 non-permanent · 1 fully activated')
+        expect(header.index('2 non-permanent')).to be < header.index('1 permanent')
+      end
+
+      it "omits the fully activated metric for a team of only permanent flags" do
+        create_feature(:only_permanent_feature, team: 'PermanentTeam', percentage: 100, permanent: true)
+        create_feature(:only_permanent_feature_2, team: 'PermanentTeam', percentage: 50, permanent: true)
+
+        get '/'
+
+        header = team_header('PermanentTeam')
+        expect(header).to include('2 permanent')
+        expect(header).to include('0 non-permanent')
+        expect(header).not_to include('fully activated')
+      end
+
+      it "shows a zero permanent count for teams without permanent flags" do
+        create_feature(:normal_only_feature, team: 'NormalTeam', percentage: 100)
+
+        get '/'
+
+        header = team_header('NormalTeam')
+        expect(header).to include('0 permanent')
+        expect(header).to include('1 non-permanent · 1 fully activated')
+      end
+
+      it "keeps permanent flags in the tables and the page total" do
+        create_feature(:table_permanent_feature, team: 'TableTeam', percentage: 100, permanent: true)
+        create_feature(:table_normal_feature, team: 'TableTeam', percentage: 100)
+
+        get '/'
+
+        expect(last_response.body).to include('2 total features')
+        list_html, team_html = views
+        expect(list_html).to include('table_permanent_feature')
+        expect(team_html).to include('table_permanent_feature')
+      end
+    end
+  end
+
   describe 'GET /features/new' do
     it "renders new feature form" do
       get '/features/new'
@@ -153,6 +256,29 @@ RSpec.describe 'Web UI' do
       expect(last_response.body).to include('Groups')
       expect(last_response.body).to include('Users')
       expect(last_response.body).to include('Description')
+    end
+
+    describe 'permanent toggle' do
+      def permanent_input
+        last_response.body[/<input[^>]*id="permanent"[^>]*>/m]
+      end
+
+      it "renders the toggle unchecked for a non-permanent feature" do
+        get '/features/show_test_feature'
+
+        expect(last_response.body).to include('Permanent')
+        expect(permanent_input).not_to include('checked')
+      end
+
+      it "renders the toggle checked for a permanent feature" do
+        ROLLOUT.with_feature(:show_test_feature) do |feature|
+          feature.data.update(permanent: 'true')
+        end
+
+        get '/features/show_test_feature'
+
+        expect(permanent_input).to include('checked')
+      end
     end
 
     it "renders show json" do
@@ -377,6 +503,79 @@ RSpec.describe 'Web UI' do
 
       feature = ROLLOUT.get(:edit_test_feature)
       expect(feature.data['consumer_cache_break']).to eq 'true'
+    end
+
+    describe 'permanent flag' do
+      it "saves permanent when a description is provided" do
+        post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', permanent: 'true',
+             description: 'Kill switch we keep forever', last_updated_at: updated_at.to_s
+
+        expect(last_response.location).to include('success=Feature+updated+successfully')
+        feature = ROLLOUT.get(:edit_test_feature)
+        expect(feature.data['permanent']).to eq 'true'
+      end
+
+      it "clears permanent when the toggle is off" do
+        ROLLOUT.with_feature(:edit_test_feature) do |feature|
+          feature.data.update(permanent: 'true', description: 'Kill switch')
+        end
+        current_updated_at = ROLLOUT.get(:edit_test_feature).data['updated_at']
+
+        post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', permanent: 'false',
+             description: 'Kill switch', last_updated_at: current_updated_at.to_s
+
+        feature = ROLLOUT.get(:edit_test_feature)
+        expect(feature.data['permanent']).to eq 'false'
+      end
+
+      it "rejects permanent with a blank description and leaves the flag unchanged" do
+        post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', permanent: 'true',
+             description: '', last_updated_at: updated_at.to_s
+
+        expect(last_response).to be_redirect
+        expect(last_response.location).to include('error=A+description+is+required+for+permanent+flags')
+
+        feature = ROLLOUT.get(:edit_test_feature)
+        expect(feature.data['permanent']).to be_nil
+        expect(feature.data['team']).to eq 'InitialTeam'
+        expect(feature.data['description']).to be_nil
+        expect(feature.data['updated_at']).to eq updated_at
+        expect(feature.percentage).to eq 100.0
+      end
+
+      it "rejects permanent with a whitespace-only description and leaves the flag unchanged" do
+        post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', permanent: 'true',
+             description: "   \t ", last_updated_at: updated_at.to_s
+
+        expect(last_response).to be_redirect
+        expect(last_response.location).to include('error=A+description+is+required+for+permanent+flags')
+
+        feature = ROLLOUT.get(:edit_test_feature)
+        expect(feature.data['permanent']).to be_nil
+        expect(feature.data['team']).to eq 'InitialTeam'
+        expect(feature.data['updated_at']).to eq updated_at
+        expect(feature.percentage).to eq 100.0
+      end
+
+      it "allows a blank description when permanent is off" do
+        post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', permanent: 'false',
+             description: '', last_updated_at: updated_at.to_s
+
+        expect(last_response.location).to include('success=Feature+updated+successfully')
+        feature = ROLLOUT.get(:edit_test_feature)
+        expect(feature.data['permanent']).to eq 'false'
+      end
+
+      it "still requires a team when permanent is enabled" do
+        post '/features/edit_test_feature', team: '', percentage: '50', permanent: 'true',
+             description: 'Kill switch', last_updated_at: updated_at.to_s
+
+        expect(last_response).to be_redirect
+        expect(last_response.location).to include('error=Team+is+required')
+
+        feature = ROLLOUT.get(:edit_test_feature)
+        expect(feature.data['permanent']).to be_nil
+      end
     end
 
     it "updates updated_at timestamp" do

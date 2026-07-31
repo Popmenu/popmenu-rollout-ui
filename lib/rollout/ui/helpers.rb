@@ -214,6 +214,12 @@ module Rollout::UI
       feature.data['consumer_cache_break'] == 'true'
     end
 
+    # Permanent flags stay in place indefinitely and are excluded from the
+    # team header metrics. Missing values on existing flags mean false.
+    def permanent?(feature)
+      feature.data['permanent'] == 'true'
+    end
+
     def get_high_percent_activate(feature)
       return 100 unless consumer_cache_break?(feature)
 

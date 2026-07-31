@@ -620,6 +620,34 @@ RSpec.describe Rollout::UI::Helpers do
     end
   end
 
+  describe '#permanent?' do
+    it 'returns true when permanent data is "true"' do
+      feature = double('feature', data: { 'permanent' => 'true' })
+
+      expect(helper.permanent?(feature)).to be true
+    end
+
+    it 'returns false when permanent data is "false"' do
+      feature = double('feature', data: { 'permanent' => 'false' })
+
+      expect(helper.permanent?(feature)).to be false
+    end
+
+    it 'returns false when permanent data is missing' do
+      feature = double('feature', data: {})
+
+      expect(helper.permanent?(feature)).to be false
+    end
+
+    it 'returns false for values other than the string "true"' do
+      ['TRUE', 'True', '1', 'yes', ''].each do |value|
+        feature = double('feature', data: { 'permanent' => value })
+
+        expect(helper.permanent?(feature)).to be false
+      end
+    end
+  end
+
   describe '#confirmation_message' do
     it 'includes cache warning when consumer_cache_break is enabled' do
       feature = double('feature', name: 'my_feature', data: { 'consumer_cache_break' => 'true' })

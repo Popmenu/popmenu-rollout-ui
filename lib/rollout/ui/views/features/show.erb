@@ -3,6 +3,8 @@
         const percentInput = document.getElementById('percentage');
         const startingPercent = Number(percentInput.value);
         const cacheBreakToggle = document.getElementById('consumer_cache_break');
+        const permanentToggle = document.getElementById('permanent');
+        const descriptionInput = document.getElementById('description');
         const form = document.getElementById('updateFormSubmit');
         const featureName = '<%= @feature.name %>';
 
@@ -17,6 +19,14 @@
             const currentPercent = Number(percentInput.value);
             const cacheBreakEnabled = cacheBreakToggle.checked;
             
+            // Permanent flags must explain why they are permanent
+            if (permanentToggle.checked && descriptionInput.value.trim() === '') {
+                alert('Permanent flags require a description. Please describe why this flag is permanent.');
+                descriptionInput.focus();
+                e.preventDefault();
+                return false;
+            }
+
             // Only show warning if percentage changed and cache break is enabled
             if (currentPercent !== startingPercent && cacheBreakEnabled) {
                 const message = `Please allow 20 minutes between changes for caching to recover.\nAre you sure you want to update ${featureName} to ${currentPercent}%?`;
@@ -60,6 +70,12 @@
       label: 'Consumer Cache Break', 
       checked: @feature.data['consumer_cache_break'] == 'true',
       tooltip: 'cache_break_tooltip'
+    } %>
+
+    <%= erb :"features/partials/toggle_input", locals: {
+      name: 'permanent',
+      label: 'Permanent',
+      checked: permanent?(@feature)
     } %>
 
     <div class="mb-6">
