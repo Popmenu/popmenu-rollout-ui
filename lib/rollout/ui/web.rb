@@ -72,6 +72,10 @@ module Rollout::UI
       team = extract_team_from_params
       validate_team!(team, feature_path(params[:feature_name]))
 
+      if params[:permanent] == 'true' && params[:description].to_s.strip.empty?
+        redirect "#{feature_path(params[:feature_name])}?error=#{CGI.escape('A description is required for permanent flags')}"
+      end
+
       with_rollout_context(rollout, actor: actor) do
         rollout.with_feature(params[:feature_name]) do |feature|
           feature.percentage = params[:percentage].to_f.clamp(0.0, 100.0)
@@ -83,6 +87,7 @@ module Rollout::UI
             description: params[:description],
             team: team,
             consumer_cache_break: params[:consumer_cache_break],
+            permanent: params[:permanent],
             updated_at: Time.now.to_i
           )
         end
