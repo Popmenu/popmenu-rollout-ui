@@ -509,6 +509,30 @@ RSpec.describe 'Web UI' do
       expect(feature.users).to eq(['user1', 'user2', 'user3'])
     end
 
+    it "preserves users when users param is omitted" do
+      users = (1..151).map { |i| "user#{i}" }.sort
+      ROLLOUT.with_feature(:edit_test_feature) do |feature|
+        feature.users = users
+      end
+
+      post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', last_updated_at: updated_at.to_s
+
+      feature = ROLLOUT.get(:edit_test_feature)
+      expect(feature.users).to eq(users)
+    end
+
+    it "updates users when more than 150 are submitted" do
+      ROLLOUT.with_feature(:edit_test_feature) do |feature|
+        feature.users = (1..151).map { |i| "user#{i}" }
+      end
+      users = (1..152).map { |i| "user#{i}" }.sort
+
+      post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', users: users.join(', '), last_updated_at: updated_at.to_s
+
+      feature = ROLLOUT.get(:edit_test_feature)
+      expect(feature.users).to eq(users)
+    end
+
     it "clamps percentage to 0-100 range" do
       current_updated_at = ROLLOUT.get(:edit_test_feature).data['updated_at']
       post '/features/edit_test_feature', team: 'NewTeam', percentage: '150', last_updated_at: current_updated_at.to_s
