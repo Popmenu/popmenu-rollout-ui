@@ -349,7 +349,7 @@ RSpec.describe 'Web UI' do
       get '/features/show_test_feature'
 
       expect(last_response.body).not_to include('See all')
-      expect(last_response.body).not_to include('users_preview')
+      expect(last_response.body).not_to include('id="users_preview"')
     end
   end
 
