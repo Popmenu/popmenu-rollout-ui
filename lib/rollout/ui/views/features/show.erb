@@ -103,9 +103,12 @@
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">Users</label>
       <% if @feature.users.count > 150 %>
-        <div class="form-input bg-gray-50 text-gray-500">
-          <%= @feature.users.count %> users
-        </div>
+        <textarea class="form-input bg-gray-50 text-gray-500" id="users_preview" rows="3" readonly><%= @feature.users.first(150).join(', ') %>, …</textarea>
+        <textarea class="form-input hidden" name="users" id="users" rows="10" placeholder="Comma-separated user IDs" disabled><%= @feature.users.join(', ') %></textarea>
+        <button type="button" id="users_see_more" class="mt-2 text-sm font-medium text-blue-600"
+                onclick="document.getElementById('users_preview').remove(); this.remove(); const u = document.getElementById('users'); u.disabled = false; u.classList.remove('hidden');">
+          See all <%= @feature.users.count %> users
+        </button>
       <% else %>
         <textarea class="form-input" name="users" id="users" rows="3" placeholder="Comma-separated user IDs"><%= @feature.users.join(', ') %></textarea>
       <% end %>

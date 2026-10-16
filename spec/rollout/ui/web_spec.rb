@@ -328,6 +328,29 @@ RSpec.describe 'Web UI' do
 
       expect(last_response.body).to include('user123')
     end
+
+    it "shows a see more button when feature has more than 150 users" do
+      ROLLOUT.with_feature(:show_test_feature) do |feature|
+        feature.users = (1..151).map { |i| "user#{i}" }
+      end
+
+      get '/features/show_test_feature'
+
+      expect(last_response.body).to include('See all 151 users')
+      expect(last_response.body).to include('id="users_preview"')
+      expect(last_response.body).to match(/<textarea[^>]*name="users"[^>]*disabled>/)
+    end
+
+    it "does not show a see more button when feature has 150 or fewer users" do
+      ROLLOUT.with_feature(:show_test_feature) do |feature|
+        feature.users = (1..150).map { |i| "user#{i}" }
+      end
+
+      get '/features/show_test_feature'
+
+      expect(last_response.body).not_to include('See all')
+      expect(last_response.body).not_to include('users_preview')
+    end
   end
 
   describe 'POST /features/new (create feature)' do
