@@ -328,6 +328,29 @@ RSpec.describe 'Web UI' do
 
       expect(last_response.body).to include('user123')
     end
+
+    it "shows a see more button when feature has more than 150 users" do
+      ROLLOUT.with_feature(:show_test_feature) do |feature|
+        feature.users = (1..151).map { |i| "user#{i}" }
+      end
+
+      get '/features/show_test_feature'
+
+      expect(last_response.body).to include('See all 151 users')
+      expect(last_response.body).to include('id="users_preview"')
+      expect(last_response.body).to match(/<textarea[^>]*name="users"[^>]*disabled>/)
+    end
+
+    it "does not show a see more button when feature has 150 or fewer users" do
+      ROLLOUT.with_feature(:show_test_feature) do |feature|
+        feature.users = (1..150).map { |i| "user#{i}" }
+      end
+
+      get '/features/show_test_feature'
+
+      expect(last_response.body).not_to include('See all')
+      expect(last_response.body).not_to include('id="users_preview"')
+    end
   end
 
   describe 'POST /features/new (create feature)' do
@@ -484,6 +507,30 @@ RSpec.describe 'Web UI' do
 
       feature = ROLLOUT.get(:edit_test_feature)
       expect(feature.users).to eq(['user1', 'user2', 'user3'])
+    end
+
+    it "preserves users when users param is omitted" do
+      users = (1..151).map { |i| "user#{i}" }.sort
+      ROLLOUT.with_feature(:edit_test_feature) do |feature|
+        feature.users = users
+      end
+
+      post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', last_updated_at: updated_at.to_s
+
+      feature = ROLLOUT.get(:edit_test_feature)
+      expect(feature.users).to eq(users)
+    end
+
+    it "updates users when more than 150 are submitted" do
+      ROLLOUT.with_feature(:edit_test_feature) do |feature|
+        feature.users = (1..151).map { |i| "user#{i}" }
+      end
+      users = (1..152).map { |i| "user#{i}" }.sort
+
+      post '/features/edit_test_feature', team: 'NewTeam', percentage: '50', users: users.join(', '), last_updated_at: updated_at.to_s
+
+      feature = ROLLOUT.get(:edit_test_feature)
+      expect(feature.users).to eq(users)
     end
 
     it "clamps percentage to 0-100 range" do

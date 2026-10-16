@@ -15,6 +15,18 @@
             percentInput.min = minPercent.toString();
         };
 
+        // Only rendered when the user list is truncated
+        const seeAllUsersButton = document.getElementById('users_see_more');
+        if (seeAllUsersButton) {
+            seeAllUsersButton.onclick = () => {
+                const usersInput = document.getElementById('users');
+                document.getElementById('users_preview').remove();
+                seeAllUsersButton.remove();
+                usersInput.disabled = false;
+                usersInput.classList.remove('hidden');
+            };
+        }
+
         form.onsubmit = (e) => {
             const currentPercent = Number(percentInput.value);
             const cacheBreakEnabled = cacheBreakToggle.checked;
@@ -102,10 +114,14 @@
 
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-2">Users</label>
-      <% if @feature.users.count > 150 %>
-        <div class="form-input bg-gray-50 text-gray-500">
-          <%= @feature.users.count %> users
-        </div>
+      <% user_count = @feature.users.count %>
+      <% preview_limit = 150 %>
+      <% if user_count > preview_limit %>
+        <textarea class="form-input bg-gray-50 text-gray-500" id="users_preview" rows="3" readonly><%= @feature.users.first(preview_limit).join(', ') %>, …</textarea>
+        <textarea class="form-input hidden" name="users" id="users" rows="10" placeholder="Comma-separated user IDs" disabled><%= @feature.users.join(', ') %></textarea>
+        <button type="button" id="users_see_more" class="mt-2 text-sm font-medium text-blue-600">
+          See all <%= user_count %> users
+        </button>
       <% else %>
         <textarea class="form-input" name="users" id="users" rows="3" placeholder="Comma-separated user IDs"><%= @feature.users.join(', ') %></textarea>
       <% end %>
